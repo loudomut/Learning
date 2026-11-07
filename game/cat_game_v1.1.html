@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev & Cat Studio - Cozy Developer Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-code {
+      font-family: 'Fira Code', monospace;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.5);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.8);
+    }
+    .glow-desk {
+      box-shadow: 0 0 50px rgba(99, 102, 241, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen overflow-hidden flex flex-col justify-between">
+
+  <!-- Top Navigation & Global Stats -->
+  <header class="bg-slate-900/85 backdrop-blur-md border-b border-slate-800 px-6 py-3 flex flex-wrap items-center justify-between gap-4 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-amber-500 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20">
+        💻
+      </div>
+      <div>
+        <h1 class="font-bold text-lg tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">
+          Dev & Cat Studio
+        </h1>
+        <p class="text-xs text-slate-400 font-code">v1.1.1 • Cozy Indie Simulator</p>
+      </div>
+    </div>
+
+    <!-- Main Currencies -->
+    <div class="flex items-center gap-6 bg-slate-950/60 border border-slate-800/80 px-5 py-2 rounded-2xl">
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">⚡</div>
+        <div>
+          <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Lines of Code</div>
+          <div id="loc-display" class="font-code font-bold text-xl text-indigo-400">0</div>
+        </div>
+      </div>
+      <div class="h-8 w-[1px] bg-slate-800"></div>
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">⚙️</div>
+        <div>
+          <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Passive Output</div>
+          <div id="lps-display" class="font-code font-bold text-base text-emerald-400">0 LoC/s</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Toggles & Audio -->
+    <div class="flex items-center gap-3">
+      <button id="btn-audio" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 transition border border-slate-700 text-sm flex items-center gap-2">
+        <span id="audio-icon">🔊</span>
+        <span id="audio-label" class="hidden sm:inline text-xs font-semibold">Sound On</span>
+      </button>
+      <button id="btn-theme" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 transition border border-slate-700 text-sm flex items-center gap-2">
+        <span id="theme-icon">🌙</span>
+        <span id="theme-label" class="hidden sm:inline text-xs font-semibold">Night Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Layout -->
+  <main class="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
+
+    <!-- Canvas Interactive Workspace Area -->
+    <div class="flex-1 relative flex items-center justify-center p-4 min-h-[450px]">
+
+      <!-- Notifications / Alert Overlay -->
+      <div id="disruption-banner" class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-rose-950/90 border border-rose-500/50 text-rose-200 px-6 py-2.5 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-3 animate-bounce">
+        <span class="text-xl">🐱⚠️</span>
+        <span class="text-sm font-semibold" id="disruption-text">Mochi jumped on your keyboard! Give her some pets or treats!</span>
+      </div>
+
+      <!-- Canvas for Rendering Workspace & Objects -->
+      <div class="relative w-full max-w-4xl h-[550px] rounded-3xl overflow-hidden border border-slate-800/80 bg-slate-900/50 shadow-2xl glow-desk">
+        <canvas id="gameCanvas" class="w-full h-full cursor-pointer block"></canvas>
+
+        <!-- Interactive Hotspot Buttons Overlay -->
+        <div class="absolute bottom-4 left-4 right-4 flex flex-wrap justify-between items-end gap-3 pointer-events-none z-10">
+
+          <!-- Cat Status & Care Quick Controls -->
+          <div class="pointer-events-auto bg-slate-950/90 backdrop-blur-md border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 min-w-[240px] shadow-2xl">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <span>🐱</span> <span id="cat-name-display">Mochi</span>
+              </span>
+              <span id="cat-state-tag" class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                Happy
+              </span>
+            </div>
+
+            <!-- Cat Happiness Bar -->
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1 font-medium">
+                <span>Happiness</span>
+                <span id="cat-happy-num">100%</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div id="cat-happy-bar" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full w-full transition-all duration-300"></div>
+              </div>
+            </div>
+
+            <!-- Cat Hunger Bar -->
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1 font-medium">
+                <span>Fullness</span>
+                <span id="cat-hunger-num">100%</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div id="cat-hunger-bar" class="bg-gradient-to-r from-amber-500 to-orange-400 h-full w-full transition-all duration-300"></div>
+              </div>
+            </div>
+
+            <!-- Care Actions -->
+            <div class="grid grid-cols-3 gap-2 mt-1">
+              <button id="act-pet" class="py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-700 active:scale-95 transition flex flex-col items-center gap-1">
+                <span>🖐️</span> Pet
+              </button>
+              <button id="act-feed" class="py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-700 active:scale-95 transition flex flex-col items-center gap-1">
+                <span>🐟</span> Feed
+              </button>
+              <button id="act-toy" class="py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-700 active:scale-95 transition flex flex-col items-center gap-1">
+                <span>🧶</span> Play
+              </button>
+            </div>
+          </div>
+
+          <!-- Coffee & Energy Boost Meter -->
+          <div class="pointer-events-auto bg-slate-950/90 backdrop-blur-md border border-slate-800 p-4 rounded-2xl flex items-center gap-4 shadow-2xl">
+            <button id="act-coffee" class="relative group p-3 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded-2xl active:scale-95 transition flex items-center justify-center">
+              <span class="text-3xl group-hover:scale-110 transition-transform">☕</span>
+              <span id="coffee-badge" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow">V60</span>
+            </button>
+            <div>
+              <div class="text-xs text-slate-400 font-semibold mb-0.5">Coffee Caffeine Rush</div>
+              <div class="text-xs font-bold text-amber-300 flex items-center gap-1.5" id="coffee-status">
+                <span>Click mug to drink!</span>
+              </div>
+              <div class="w-36 bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+                <div id="coffee-bar" class="bg-amber-400 h-full w-0 transition-all duration-200"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Shop & Upgrades Sidebar -->
+    <aside class="w-full lg:w-96 bg-slate-900/90 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col z-20 h-auto lg:h-auto max-h-[500px] lg:max-h-none">
+
+      <!-- Shop Navigation Tabs -->
+      <div class="flex border-b border-slate-800 bg-slate-950/50">
+        <button data-tab="upgrades" class="shop-tab flex-1 py-3 px-4 text-xs font-bold text-indigo-400 border-b-2 border-indigo-500 bg-slate-900/40 flex items-center justify-center gap-2 transition">
+          <span>⚡</span> Tech & Automation
+        </button>
+        <button data-tab="gear" class="shop-tab flex-1 py-3 px-4 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-200 flex items-center justify-center gap-2 transition">
+          <span>🖥️</span> Setup Gear
+        </button>
+        <button data-tab="cat" class="shop-tab flex-1 py-3 px-4 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-200 flex items-center justify-center gap-2 transition">
+          <span>🐟</span> Cat Care
+        </button>
+      </div>
+
+      <!-- Upgrades Items List -->
+      <div id="shop-items-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+        <!-- Shop items injected via JS -->
+      </div>
+
+      <!-- Achievements & Stats Footer -->
+      <div class="p-4 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <span>🏆 Achievements:</span>
+          <span id="achieve-count" class="font-bold text-amber-400">0 / 6</span>
+        </div>
+        <button id="btn-achievements" class="hover:text-slate-200 underline">View All</button>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- Achievements Modal -->
+  <div id="modal-achievements" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
+          <span>🏆</span> Studio Milestones
+        </h3>
+        <button id="close-modal" class="text-slate-400 hover:text-white text-xl">✕</button>
+      </div>
+      <div id="achievements-list" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+        <!-- Achievements items -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Logic & Graphics JavaScript -->
+  <script>
+    // --- AUDIO SYSTEM (Web Audio API Synthesizer) ---
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      }
+      playType() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const freq = 300 + Math.random() * 400;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+      playMeow() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(750, now + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(500, now + 0.35);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.35);
+      }
+      playPurr() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(60, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.4);
+      }
+      playCoffee() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(600, now + 0.25);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.25);
+      }
+      playUpgrade() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.setValueAtTime(500, now + 0.08);
+        osc.frequency.setValueAtTime(750, now + 0.16);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.3);
+      }
+    }
+
+    const sfx = new SoundFX();
+
+    // --- GAME STATE & SHOP DEFINITIONS ---
+    const state = {
+      loc: 0,
+      totalLoc: 0,
+      clickPower: 1,
+      lps: 0,
+      catHappiness: 100,
+      catHunger: 100,
+      catState: 'HAPPY', // HAPPY, SLEEPING, ANGRY, KEYBOARD
+      keyboardCooldown: 0,
+      catPos: { x: 0.28, y: 0.62 }, // Исправленные координаты: кот изначально сидит прямо на столе рядом с ноутбуком
+      catTarget: { x: 0.28, y: 0.62 },
+      catAnimTimer: 0,
+      coffeeBoost: 0,
+      isNight: true,
+      activeTab: 'upgrades',
+      upgrades: {
+        autolinter: { count: 0, baseCost: 15, lps: 0.5, name: 'Auto-Linter Script', icon: '🧹', desc: 'Fixes trailing commas automatically.' },
+        copilot: { count: 0, baseCost: 100, lps: 4, name: 'AI Copilot Assistant', icon: '🤖', desc: 'Autocompletes code blocks while you rest.' },
+        freelancer: { count: 0, baseCost: 1100, lps: 32, name: 'Junior Dev Subcontractor', icon: '👨‍💻', desc: 'Writes boilerplate code for pizza.' },
+        cicd: { count: 0, baseCost: 12000, lps: 260, name: 'Automated CI/CD Pipeline', icon: '🚀', desc: 'Deploys commits effortlessly.' }
+      },
+      gear: {
+        keyboard: { count: 0, baseCost: 50, clickAdd: 1, name: 'Mechanical Keyboard', icon: '⌨️', desc: 'Crisp tactile switches +1 LoC/click.' },
+        monitor: { count: 0, baseCost: 350, clickAdd: 5, name: '34" Ultrawide Display', icon: '🖥️', desc: 'More screen space +5 LoC/click.' },
+        v60: { count: 0, baseCost: 800, clickAdd: 12, name: 'V60 Pour-Over Coffee Station', icon: '☕', desc: 'Boosts caffeine effectiveness.' }
+      },
+      catItems: {
+        treats: { count: 0, baseCost: 25, hungerAdd: 30, name: 'Gourmet Salmon Treats', icon: '🐟', desc: 'Restores 30% fullness.' },
+        toy: { count: 0, baseCost: 75, happyAdd: 35, name: 'Laser Pointer Toy', icon: '🧶', desc: 'Restores 35% happiness.' },
+        catbed: { count: 0, baseCost: 500, decayReduce: 0.3, name: 'Orthopedic Cat Cushion', icon: '🛌', desc: 'Slower mood decay.' }
+      },
+      achievements: [
+        { id: 'first_code', name: 'Hello World', desc: 'Write your first 10 lines of code.', unlocked: false, icon: '🐣' },
+        { id: 'cat_lover', name: 'Cat Whispers', desc: 'Pet Mochi 20 times.', unlocked: false, icon: '💖', count: 0 },
+        { id: 'coffee_addict', name: 'Overclocked', desc: 'Activate Coffee Boost 5 times.', unlocked: false, icon: '⚡', count: 0 },
+        { id: 'loc_10k', name: 'Senior Developer', desc: 'Accumulate 10,000 total LoC.', unlocked: false, icon: '📜' },
+        { id: 'automation', name: 'DevOps Master', desc: 'Reach 100 LoC/s passive output.', unlocked: false, icon: '⚙️' },
+        { id: 'happy_cat', name: 'Pure Comfort', desc: 'Keep Mochi above 90% happy for 1 min.', unlocked: false, icon: '👑', timer: 0 }
+      ]
+    };
+
+    // --- CANVAS RENDERING SYSTEM ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const particles = [];
+    function spawnParticle(x, y, text, color = '#818cf8') {
+      particles.push({ x, y, text, color, alpha: 1, life: 1 });
+    }
+
+    function renderWorkspace() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // 1. ROOM WALL & BACKGROUND GRADIENT
+      const wallGrad = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+      if (state.isNight) {
+        wallGrad.addColorStop(0, '#0f172a');
+        wallGrad.addColorStop(1, '#1e1b4b');
+      } else {
+        wallGrad.addColorStop(0, '#312e81');
+        wallGrad.addColorStop(1, '#4338ca');
+      }
+      ctx.fillStyle = wallGrad;
+      ctx.fillRect(0, 0, w, h * 0.55);
+
+      // --- SCENIC WINDOW ---
+      const winX = w * 0.08;
+      const winY = h * 0.05;
+      const winW = w * 0.32;
+      const winH = h * 0.38;
+
+      const skyGrad = ctx.createLinearGradient(0, winY, 0, winY + winH);
+      if (state.isNight) {
+        skyGrad.addColorStop(0, '#020617');
+        skyGrad.addColorStop(0.7, '#1e1b4b');
+        skyGrad.addColorStop(1, '#31103f');
+      } else {
+        skyGrad.addColorStop(0, '#38bdf8');
+        skyGrad.addColorStop(0.6, '#bae6fd');
+        skyGrad.addColorStop(1, '#fef08a');
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(winX, winY, winW, winH, 16);
+      ctx.clip();
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(winX, winY, winW, winH);
+
+      if (state.isNight) {
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(winX + winW * 0.75, winY + winH * 0.3, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        const starTime = Date.now() / 1000;
+        for (let i = 0; i < 6; i++) {
+          const sx = winX + (i * 37) % winW;
+          const sy = winY + (i * 19) % (winH * 0.5);
+          ctx.globalAlpha = 0.3 + 0.7 * Math.abs(Math.sin(starTime + i));
+          ctx.fillRect(sx, sy, 2, 2);
+        }
+        ctx.globalAlpha = 1.0;
+      } else {
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(winX + winW * 0.25, winY + winH * 0.3, 22, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Trees
+      const treeTime = Math.sin(Date.now() / 1200) * 4;
+      ctx.fillStyle = state.isNight ? '#052e16' : '#15803d';
+      ctx.beginPath();
+      ctx.arc(winX + winW * 0.2 + treeTime * 0.5, winY + winH * 0.85, winW * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Window Frame
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.roundRect(winX, winY, winW, winH, 16);
+      ctx.stroke();
+
+      // Poster
+      const posterX = w * 0.75;
+      const posterY = h * 0.08;
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(posterX, posterY, 70, 90);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(posterX, posterY, 70, 90);
+      ctx.fillStyle = '#ec4899';
+      ctx.font = '20px sans-serif';
+      ctx.fillText('💻❤️', posterX + 12, posterY + 52);
+
+      // Floor
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillRect(0, h * 0.55, w, h * 0.45);
+
+      // --- ISOMETRIC DESK SETUP ---
+      const deskX = w * 0.12;
+      const deskY = h * 0.45;
+      const deskW = w * 0.76;
+      const deskH = h * 0.48;
+
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.roundRect(deskX, deskY, deskW, deskH, 24);
+      ctx.fill();
+
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      ctx.roundRect(deskX + 8, deskY + 8, deskW - 16, deskH - 24, 18);
+      ctx.fill();
+
+      // Monitor
+      if (state.gear.monitor.count > 0) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(w * 0.3, h * 0.28, w * 0.4, h * 0.18);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(w * 0.3 + 4, h * 0.28 + 4, w * 0.4 - 8, h * 0.18 - 8);
+
+        ctx.fillStyle = '#38bdf8';
+        for (let i = 0; i < 5; i++) {
+          ctx.fillRect(w * 0.32, h * 0.30 + i * 12, (i % 2 === 0 ? 120 : 80), 3);
+        }
+      }
+
+      // Laptop
+      const laptopX = w * 0.38;
+      const laptopY = h * 0.48;
+      const laptopW = w * 0.24;
+      const laptopH = h * 0.18;
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.roundRect(laptopX, laptopY, laptopW, laptopH, 12);
+      ctx.fill();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(laptopX + 12, laptopY + 12, laptopW - 24, laptopH - 45);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(laptopX + laptopW/2 - 20, laptopY + laptopH - 28, 40, 20);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(laptopX + 8, laptopY - h * 0.16, laptopW - 16, h * 0.16);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(laptopX + 8, laptopY - h * 0.16, laptopW - 16, h * 0.16);
+
+      ctx.fillStyle = '#818cf8';
+      const lines = Math.min(8, 2 + Math.floor(state.loc % 10));
+      for (let i = 0; i < lines; i++) {
+        const lineW = (Math.sin(i + state.loc) * 0.3 + 0.6) * (laptopW - 40);
+        ctx.fillRect(laptopX + 16, laptopY - h * 0.14 + i * 9, lineW, 3);
+      }
+
+      // Coffee Mug
+      const mugX = w * 0.72;
+      const mugY = h * 0.58;
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(mugX, mugY, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      ctx.arc(mugX, mugY, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // --- CAT RENDERING & MOVEMENT ---
+      let catX = w * state.catPos.x;
+      let catY = h * state.catPos.y;
+
+      if (state.catState === 'KEYBOARD') {
+        catX = laptopX + laptopW / 2;
+        catY = laptopY + 10;
+      }
+
+      // Плавное перемещение кота
+      state.catPos.x += (state.catTarget.x - state.catPos.x) * 0.04;
+      state.catPos.y += (state.catTarget.y - state.catPos.y) * 0.04;
+
+      ctx.save();
+      ctx.translate(catX, catY);
+
+      // Shadow
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+      ctx.beginPath();
+      ctx.ellipse(0, 16, 26, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const isAngry = state.catState === 'ANGRY' || state.catState === 'KEYBOARD';
+      const mainFur = isAngry ? '#e11d48' : '#f97316';
+      const darkFur = isAngry ? '#9f1239' : '#c2410c';
+      const pawColor = '#fff7ed';
+
+      // Tail
+      const tailWag = Math.sin(Date.now() / 200) * 0.35;
+      ctx.strokeStyle = mainFur;
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-18, 2);
+      ctx.quadraticCurveTo(-36, -15 + tailWag * 12, -32, -26);
+      ctx.stroke();
+
+      if (state.catState === 'SLEEPING') {
+        ctx.fillStyle = mainFur;
+        ctx.beginPath();
+        ctx.ellipse(0, 2, 24, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = pawColor;
+        ctx.beginPath();
+        ctx.arc(6, 14, 5, 0, Math.PI * 2);
+        ctx.arc(16, 14, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = mainFur;
+        ctx.beginPath();
+        ctx.arc(14, -2, 13, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = mainFur;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 22, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = pawColor;
+        ctx.beginPath();
+        ctx.arc(-10, 14, 5, 0, Math.PI * 2);
+        ctx.arc(0, 14, 5, 0, Math.PI * 2);
+        ctx.arc(12, 14, 5, 0, Math.PI * 2);
+        ctx.arc(22, 14, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = mainFur;
+        ctx.beginPath();
+        ctx.arc(16, -10, 14, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Ears
+      ctx.fillStyle = mainFur;
+      ctx.beginPath();
+      ctx.moveTo(10, -20); ctx.lineTo(15, -32); ctx.lineTo(20, -20);
+      ctx.moveTo(18, -20); ctx.lineTo(24, -30); ctx.lineTo(28, -18);
+      ctx.fill();
+      ctx.fillStyle = '#fda4af';
+      ctx.beginPath();
+      ctx.moveTo(12, -21); ctx.lineTo(15, -28); ctx.lineTo(18, -21);
+      ctx.moveTo(20, -21); ctx.lineTo(24, -27); ctx.lineTo(26, -20);
+      ctx.fill();
+
+      ctx.fillStyle = pawColor;
+      ctx.beginPath();
+      ctx.arc(19, -6, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.moveTo(21, -9); ctx.lineTo(24, -9); ctx.lineTo(22.5, -6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Eyes
+      if (state.catState === 'SLEEPING') {
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(17, -10, 3, 0.1, Math.PI);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(17, -12, 2.8, 0, Math.PI * 2);
+        ctx.arc(24, -12, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(16, -13, 1.5, 1.5);
+        ctx.fillRect(23, -13, 1.5, 1.5);
+      }
+
+      ctx.restore();
+
+      // Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.font = 'bold 14px "Fira Code", monospace';
+        ctx.fillText(p.text, p.x, p.y);
+        p.y -= 1.2;
+        p.alpha -= 0.025;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function gameLoop() {
+      renderWorkspace();
+      requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
+
+    // Canvas Clicks
+    canvas.addEventListener('click', (e) => {
+      sfx.init();
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const laptopX = w * 0.35;
+      const laptopY = h * 0.35;
+      const laptopW = w * 0.3;
+      const laptopH = h * 0.3;
+
+      if (clickX >= laptopX && clickX <= laptopX + laptopW && clickY >= laptopY && clickY <= laptopY + laptopH) {
+        if (state.catState === 'KEYBOARD') {
+          petCat();
+          return;
+        }
+
+        let power = state.clickPower;
+        if (state.coffeeBoost > 0) power *= 2;
+
+        state.loc += power;
+        state.totalLoc += power;
+        sfx.playType();
+        spawnParticle(clickX, clickY, `+${power} LoC`, '#818cf8');
+        updateUI();
+        checkAchievements();
+      }
+
+      const catX = w * state.catPos.x;
+      const catY = h * state.catPos.y;
+      if (Math.hypot(clickX - catX, clickY - catY) < 50) {
+        petCat();
+      }
+    });
+
+    function petCat() {
+      sfx.init();
+      state.catHappiness = Math.min(100, state.catHappiness + 30);
+      if (state.catState === 'KEYBOARD') {
+        state.catState = 'HAPPY';
+        state.keyboardCooldown = 45;
+        state.catTarget = { x: 0.28, y: 0.62 };
+      }
+      sfx.playPurr();
+      const catX = canvas.width * state.catPos.x;
+      const catY = canvas.height * state.catPos.y;
+      spawnParticle(catX, catY - 20, '💖 Purr...', '#f43f5e');
+
+      const ach = state.achievements.find(a => a.id === 'cat_lover');
+      if (ach) ach.count = (ach.count || 0) + 1;
+      updateUI();
+      checkAchievements();
+    }
+
+    function feedCat() {
+      sfx.init();
+      if (state.loc < state.catItems.treats.baseCost) return;
+      state.loc -= state.catItems.treats.baseCost;
+      state.catHunger = Math.min(100, state.catHunger + 45);
+      if (state.catState === 'KEYBOARD') {
+        state.catState = 'HAPPY';
+        state.keyboardCooldown = 45;
+        state.catTarget = { x: 0.28, y: 0.62 };
+      }
+      sfx.playMeow();
+      const catX = canvas.width * state.catPos.x;
+      const catY = canvas.height * state.catPos.y;
+      spawnParticle(catX, catY - 20, '🐟 Nom Nom!', '#f59e0b');
+      updateUI();
+    }
+
+    function playCat() {
+      sfx.init();
+      if (state.loc < state.catItems.toy.baseCost) return;
+      state.loc -= state.catItems.toy.baseCost;
+      state.catHappiness = Math.min(100, state.catHappiness + 40);
+      if (state.catState === 'KEYBOARD') {
+        state.catState = 'HAPPY';
+        state.keyboardCooldown = 45;
+      }
+      sfx.playMeow();
+      // Активное перемещение кота по столу при игре с лазером
+      state.catTarget = { x: 0.18 + Math.random() * 0.45, y: 0.58 + Math.random() * 0.18 };
+      const catX = canvas.width * state.catPos.x;
+      const catY = canvas.height * state.catPos.y;
+      spawnParticle(catX, catY - 20, '🧶 Play Time!', '#3b82f6');
+      updateUI();
+    }
+
+    document.getElementById('act-coffee').addEventListener('click', () => {
+      sfx.init();
+      state.coffeeBoost = 15;
+      sfx.playCoffee();
+      const ach = state.achievements.find(a => a.id === 'coffee_addict');
+      if (ach) ach.count = (ach.count || 0) + 1;
+      checkAchievements();
+    });
+
+    // Game loop tick
+    setInterval(() => {
+      let passive = state.lps;
+      if (state.coffeeBoost > 0) {
+        passive *= 1.5;
+        state.coffeeBoost--;
+      }
+      if (state.catState !== 'KEYBOARD' && passive > 0) {
+        state.loc += passive;
+        state.totalLoc += passive;
+      }
+
+      if (state.keyboardCooldown > 0) {
+        state.keyboardCooldown--;
+      }
+
+      let decay = 0.7;
+      if (state.catItems.catbed.count > 0) decay *= 0.6;
+
+      state.catHappiness = Math.max(0, state.catHappiness - decay);
+      state.catHunger = Math.max(0, state.catHunger - decay * 0.8);
+
+      const banner = document.getElementById('disruption-banner');
+
+      if ((state.catHappiness < 10 || state.catHunger < 10) && state.keyboardCooldown <= 0) {
+        if (state.catState !== 'KEYBOARD') {
+          state.catState = 'KEYBOARD';
+          sfx.playMeow();
+        }
+        banner.classList.remove('hidden');
+        if (state.loc > 5) {
+          state.loc = Math.max(0, state.loc - 1);
+        }
+      } else {
+        banner.classList.add('hidden');
+        if (state.catState === 'KEYBOARD' && (state.catHappiness > 25 && state.catHunger > 25)) {
+          state.catState = 'HAPPY';
+          state.catTarget = { x: 0.28, y: 0.62 };
+        } else if (state.catHappiness > 75 && Math.random() < 0.15 && state.catState !== 'KEYBOARD') {
+          state.catState = 'SLEEPING';
+        } else if (state.catState !== 'SLEEPING' && state.catState !== 'KEYBOARD') {
+          state.catState = 'HAPPY';
+        }
+      }
+
+      // Живые блуждания кота по столу
+      if (state.catState === 'HAPPY' && Math.random() < 0.2) {
+        state.catTarget = { x: 0.18 + Math.random() * 0.45, y: 0.58 + Math.random() * 0.18 };
+      }
+
+      if (state.catHappiness > 90) {
+        const ach = state.achievements.find(a => a.id === 'happy_cat');
+        if (ach) ach.timer = (ach.timer || 0) + 1;
+      }
+
+      updateUI();
+      checkAchievements();
+    }, 1000);
+
+    function recalculateStats() {
+      let lps = 0;
+      for (const k in state.upgrades) {
+        lps += state.upgrades[k].count * state.upgrades[k].lps;
+      }
+      state.lps = lps;
+
+      let clickPower = 1;
+      for (const k in state.gear) {
+        clickPower += state.gear[k].count * state.gear[k].clickAdd;
+      }
+      state.clickPower = clickPower;
+    }
+
+    function renderShop() {
+      const container = document.getElementById('shop-items-container');
+      container.innerHTML = '';
+
+      let itemsDict = {};
+      if (state.activeTab === 'upgrades') itemsDict = state.upgrades;
+      else if (state.activeTab === 'gear') itemsDict = state.gear;
+      else if (state.activeTab === 'cat') itemsDict = state.catItems;
+
+      for (const key in itemsDict) {
+        const item = itemsDict[key];
+        const cost = Math.floor(item.baseCost * Math.pow(1.15, item.count || 0));
+        const canAfford = state.loc >= cost;
+
+        const el = document.createElement('div');
+        el.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+          canAfford ? 'bg-slate-800/80 border-slate-700 hover:border-indigo-500/50' : 'bg-slate-900/40 border-slate-800/60 opacity-60'
+        }`;
+
+        el.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="text-2xl p-2 rounded-xl bg-slate-950/60 border border-slate-800">${item.icon}</div>
+            <div>
+              <div class="font-bold text-xs text-slate-100 flex items-center gap-2">
+                ${item.name}
+                ${item.count !== undefined ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-code">x${item.count}</span>` : ''}
+              </div>
+              <div class="text-[11px] text-slate-400 mt-0.5">${item.desc}</div>
+            </div>
+          </div>
+          <button data-key="${key}" class="btn-buy py-2 px-3.5 rounded-xl font-code font-bold text-xs transition border ${
+            canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-400/30 shadow-lg shadow-indigo-600/20 active:scale-95' : 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
+          }">
+            ${cost} LoC
+          </button>
+        `;
+        container.appendChild(el);
+      }
+
+      document.querySelectorAll('.btn-buy').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          sfx.init();
+          const key = e.currentTarget.getAttribute('data-key');
+          const item = itemsDict[key];
+          const cost = Math.floor(item.baseCost * Math.pow(1.15, item.count || 0));
+
+          if (state.loc >= cost) {
+            state.loc -= cost;
+            if (item.count !== undefined) item.count++;
+            sfx.playUpgrade();
+            recalculateStats();
+            updateUI();
+            checkAchievements();
+            renderShop();
+          }
+        });
+      });
+    }
+
+    document.querySelectorAll('.shop-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('.shop-tab').forEach(t => {
+          t.classList.remove('text-indigo-400', 'border-indigo-500', 'bg-slate-900/40');
+          t.classList.add('text-slate-400', 'border-transparent');
+        });
+        const target = e.currentTarget;
+        target.classList.add('text-indigo-400', 'border-indigo-500', 'bg-slate-900/40');
+        target.classList.remove('text-slate-400', 'border-transparent');
+        state.activeTab = target.getAttribute('data-tab');
+        renderShop();
+      });
+    });
+
+    function updateUI() {
+      recalculateStats();
+      document.getElementById('loc-display').innerText = Math.floor(state.loc).toLocaleString();
+      document.getElementById('lps-display').innerText = `${state.lps.toFixed(1)} LoC/s`;
+
+      document.getElementById('cat-happy-num').innerText = `${Math.round(state.catHappiness)}%`;
+      document.getElementById('cat-happy-bar').style.width = `${state.catHappiness}%`;
+      document.getElementById('cat-hunger-num').innerText = `${Math.round(state.catHunger)}%`;
+      document.getElementById('cat-hunger-bar').style.width = `${state.catHunger}%`;
+
+      const tag = document.getElementById('cat-state-tag');
+      if (state.catState === 'KEYBOARD') {
+        tag.innerText = 'Blocking Keyboard!';
+        tag.className = 'text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30';
+      } else if (state.catHappiness > 70) {
+        tag.innerText = 'Purring Cozy';
+        tag.className = 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30';
+      } else {
+        tag.innerText = 'Needs Attention';
+        tag.className = 'text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30';
+      }
+
+      const coffeeStatus = document.getElementById('coffee-status');
+      const coffeeBar = document.getElementById('coffee-bar');
+      if (state.coffeeBoost > 0) {
+        coffeeStatus.innerText = `🔥 2x Boost Active (${state.coffeeBoost}s)`;
+        coffeeBar.style.width = `${(state.coffeeBoost / 15) * 100}%`;
+      } else {
+        coffeeStatus.innerText = 'Click mug to drink!';
+        coffeeBar.style.width = '0%';
+      }
+
+      renderShop();
+    }
+
+    function checkAchievements() {
+      state.achievements.forEach(ach => {
+        if (ach.unlocked) return;
+        if (ach.id === 'first_code' && state.totalLoc >= 10) ach.unlocked = true;
+        if (ach.id === 'cat_lover' && (ach.count || 0) >= 20) ach.unlocked = true;
+        if (ach.id === 'coffee_addict' && (ach.count || 0) >= 5) ach.unlocked = true;
+        if (ach.id === 'loc_10k' && state.totalLoc >= 10000) ach.unlocked = true;
+        if (ach.id === 'automation' && state.lps >= 100) ach.unlocked = true;
+        if (ach.id === 'happy_cat' && (ach.timer || 0) >= 60) ach.unlocked = true;
+
+        if (ach.unlocked) {
+          sfx.playUpgrade();
+          spawnParticle(canvas.width / 2, 80, `🏆 Unlocked: ${ach.name}!`, '#f59e0b');
+        }
+      });
+
+      const count = state.achievements.filter(a => a.unlocked).length;
+      document.getElementById('achieve-count').innerText = `${count} / ${state.achievements.length}`;
+    }
+
+    function renderAchievementsModal() {
+      const list = document.getElementById('achievements-list');
+      list.innerHTML = '';
+      state.achievements.forEach(ach => {
+        const el = document.createElement('div');
+        el.className = `p-3 rounded-2xl border flex items-center gap-3 ${
+          ach.unlocked ? 'bg-indigo-950/40 border-indigo-500/40 text-slate-200' : 'bg-slate-950/40 border-slate-800/80 text-slate-500'
+        }`;
+        el.innerHTML = `
+          <div class="text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800">${ach.icon}</div>
+          <div>
+            <div class="font-bold text-xs ${ach.unlocked ? 'text-amber-300' : 'text-slate-400'}">${ach.name}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${ach.desc}</div>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    document.getElementById('btn-achievements').addEventListener('click', () => {
+      renderAchievementsModal();
+      document.getElementById('modal-achievements').classList.remove('hidden');
+    });
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('modal-achievements').classList.add('hidden');
+    });
+
+    document.getElementById('act-pet').addEventListener('click', petCat);
+    document.getElementById('act-feed').addEventListener('click', feedCat);
+    document.getElementById('act-toy').addEventListener('click', playCat);
+
+    document.getElementById('btn-audio').addEventListener('click', () => {
+      sfx.init();
+      sfx.enabled = !sfx.enabled;
+      document.getElementById('audio-icon').innerText = sfx.enabled ? '🔊' : '🔇';
+      document.getElementById('audio-label').innerText = sfx.enabled ? 'Sound On' : 'Muted';
+    });
+
+    document.getElementById('btn-theme').addEventListener('click', () => {
+      state.isNight = !state.isNight;
+      document.getElementById('theme-icon').innerText = state.isNight ? '🌙' : '☀️';
+      document.getElementById('theme-label').innerText = state.isNight ? 'Night Mode' : 'Day Mode';
+    });
+
+    recalculateStats();
+    updateUI();
+  </script>
+</body>
+</html>
