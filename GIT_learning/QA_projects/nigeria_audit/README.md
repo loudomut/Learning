@@ -25,7 +25,7 @@
 | Windows 11 | Yandex Browser | 🟡 Баг вёрстки | ![Yandex Win11](screenshots/Yandex_11.png) |
 | macOS | Chrome, Safari | ✅ Корректно | — |
 | Windows XP | Chrome, Yandex, IE | ℹ️ Не открывается (устаревший TLS) | ![XP](screenshots/Chrome_XP.png) |
-| Mobile (iOS) | Safari, Chrome, Telegram | ✅ Адаптивно | ![Mobile](screenshots/Chrome_iPhone_17ProMax.png) |
+| Mobile (iOS) | Safari, Chrome, Telegram | ✅ Адаптивно | ![Mobile](screenshots/Chrome_IPhone_17ProMax.png) |
 
 ---
 
