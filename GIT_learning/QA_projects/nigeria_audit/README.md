@@ -25,7 +25,7 @@
 | Windows 11 | Yandex Browser | 🟡 Баг вёрстки | ![Yandex Win11](screenshots/Yandex_11.png) |
 | macOS | Chrome, Safari | ✅ Корректно | — |
 | Windows XP | Chrome, Yandex, IE | ℹ️ Не открывается (устаревший TLS) | ![XP](screenshots/Chrome_XP.png) |
-| Mobile (iOS) | Safari, Chrome, Telegram | ✅ Адаптивно | ![Mobile](screenshots/Chrome_iPhone_17ProMax) |
+| Mobile (iOS) | Safari, Chrome, Telegram | ✅ Адаптивно | ![Mobile](screenshots/Chrome_iPhone_17ProMax.png) |
 
 ---
 
@@ -34,9 +34,9 @@
 - **Наблюдение:** Зафиксирована плавающая производительность главного эндпоинта (`GET /`).
 - **Метрики:**
   - **Первый запрос после простоя (более 1 минуты):** `> 1000 ms` (эффект «холодного старта», инициализация и сборка кэша на стороне сервера).  
-    ![Cold Start Test](screenshots/Postman_Coldstart)
+    ![Cold Start Test](screenshots/Postman_Coldstart.png)
   - **Повторные запросы подряд:** `~500–600 ms` (сервер отдаёт данные из кэша Cloudflare / WordPress).  
-    ![Hot Start Test](screenshots/Postman_Hotstart)
+    ![Hot Start Test](screenshots/Postman_Hotstart.png)
 - **Вывод:** Архитектура сайта на базе WordPress демонстрирует задержку при первом обращении, однако при регулярном трафике укладывается в приемлемые нормативы отклика.
 
 ---
@@ -63,7 +63,7 @@
 - **Цель:** Проверить реакцию сервера на нецелевые и потенциально опасные методы (`DELETE`, `PUT`) для публичной главной страницы.
 - **Ход тестирования:** Через Postman на корневой эндпоинт (`GET /`) был отправлен запрос с методом `DELETE`.
 - **Результат:** Сервер вернул статус-код `200 OK` и отдал тело главной страницы вместо отказа (`405 Method Not Allowed`). Фактического удаления данных на сервере не произошло ввиду отсутствия прав авторизации.  
-  ![DELETE Method Test](screenshots/API_delete)
+  ![DELETE Method Test](screenshots/API_delete.png)
 - **Вывод:** Корневой маршрут обрабатывает метод без жесткой фильтрации, возвращая fallback-ответ, что характерно для кэшируемых WordPress-систем.
 
 ---
@@ -82,5 +82,5 @@
 - **Инструмент:** Chrome DevTools (Network tab).
 - **Результат:** 
   - Сервер использует CDN-инфраструктуру Cloudflare (`cf-cache-status`), однако в ответах **отсутствуют** ключевые заголовки безопасности: `Strict-Transport-Security` (HSTS), `X-Frame-Options`, `X-Content-Type-Options` и `Content-Security-Policy` (CSP).  
-    ![Security Headers Audit](screenshots/Devtools)
+    ![Security Headers Audit](screenshots/Devtools.png)
 - **Вывод:** Конфигурация имеет уязвимые места на уровне заголовков. Отсутствие `X-Frame-Options` делает портал потенциально уязвимым к clickjacking-атакам, а отсутствие HSTS снижает уровень форсированного шифрования соединений.
