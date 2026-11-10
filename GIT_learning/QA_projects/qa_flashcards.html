@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -94,7 +95,6 @@
     <!-- Верхняя панель управления (Header) -->
     <header class="w-full max-w-3xl flex items-center justify-between gap-4 mb-4">
         <div class="flex items-center gap-3">
-            <!-- Имитация macOS-кнопок окна -->
             <div class="hidden sm:flex items-center gap-1.5 mr-2">
                 <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
                 <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
@@ -102,17 +102,22 @@
             </div>
             <div>
                 <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-white">QA Flashcards</h1>
-                <p class="text-xs text-zinc-400">Повторение теории тестирования</p>
+                <p id="subtitleText" class="text-xs text-zinc-400">Повторение теории тестирования</p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Шильдик переключения языка -->
+            <button id="langToggleBtn" title="Сменить язык / Switch language" class="px-3 py-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 hover:text-white transition active:scale-95 text-xs font-semibold tracking-wider uppercase">
+                RU
+            </button>
+
             <!-- Кнопка перемешивания -->
-            <button id="shuffleBtn" title="Перемешать карточки" class="p-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-300 hover:text-white transition active:scale-95 flex items-center gap-2 text-sm">
+            <button id="shuffleBtn" title="Перемешать карточки" class="p-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-300 hover:text-white transition active:scale-95 flex items-center gap-2 text-sm disabled:opacity-40 disabled:pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                <span class="hidden sm:inline">Перемешать</span>
+                <span id="shuffleText" class="hidden sm:inline">Перемешать</span>
             </button>
 
             <!-- Кнопка "+" для добавления новой карточки -->
@@ -120,7 +125,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-                <span>Добавить</span>
+                <span id="addBtnText">Добавить</span>
             </button>
         </div>
     </header>
@@ -130,41 +135,57 @@
 
         <!-- Счётчик и прогресс-бар -->
         <div class="w-full flex items-center justify-between text-xs sm:text-sm text-zinc-400 mb-3 px-1">
-            <span id="cardCounter" class="font-medium text-zinc-300">Карточка 1 из 27</span>
-            <span id="customBadge" class="hidden px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs">Пользовательская</span>
-            <span class="text-zinc-500 hidden sm:inline">Пробел — перевернуть • ← → — листать</span>
+            <span id="cardCounter" class="font-medium text-zinc-300">Карточек пока нет</span>
+            <span id="shortcutsHint" class="text-zinc-500 hidden sm:inline">Пробел — перевернуть • ← → — листать</span>
         </div>
 
         <div class="w-full h-1.5 bg-zinc-800/80 rounded-full overflow-hidden mb-6">
-            <div id="progressBar" class="h-full bg-gradient-to-r from-sky-400 to-purple-500 transition-all duration-300" style="width: 3.7%;"></div>
+            <div id="progressBar" class="h-full bg-gradient-to-r from-sky-400 to-purple-500 transition-all duration-300" style="width: 0%;"></div>
+        </div>
+
+        <!-- Пустое состояние (когда карточек 0) -->
+        <div id="emptyState" class="w-full h-[360px] sm:h-[420px] rounded-[24px] bg-zinc-900/60 border border-dashed border-white/15 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <h2 id="emptyTitle" class="text-xl font-semibold text-white mb-2">Колода пуста</h2>
+            <p id="emptyDesc" class="text-sm text-zinc-400 max-w-sm mb-6">Нажми «Добавить» в правом верхнем углу или кнопку ниже, чтобы создать свою первую карточку.</p>
+            <button id="emptyAddBtn" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-medium text-sm transition active:scale-95 shadow-lg shadow-sky-500/20 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                <span id="emptyAddBtnText">Добавить первую карточку</span>
+            </button>
         </div>
 
         <!-- 3D Карточка -->
-        <div class="w-full h-[360px] sm:h-[420px] perspective-1000 relative">
+        <div id="cardContainer" class="hidden w-full h-[360px] sm:h-[420px] perspective-1000 relative">
             <div id="flashcard" class="card-inner">
 
                 <!-- Лицевая сторона (Вопрос) -->
                 <div class="card-face card-face-front">
-                    <span class="text-xs uppercase tracking-widest text-sky-400 font-semibold mb-4">Вопрос / Термин</span>
+                    <span id="frontLabel" class="text-xs uppercase tracking-widest text-sky-400 font-semibold mb-4">Вопрос / Термин</span>
                     <div class="card-content overflow-y-auto max-h-[240px] w-full flex items-center justify-center">
                         <h2 id="cardQuestion" class="text-2xl sm:text-3xl font-semibold text-white leading-snug"></h2>
                     </div>
-                    <span class="text-xs text-zinc-500 mt-6">Нажмите на карточку, чтобы увидеть ответ</span>
+                    <span id="flipPrompt" class="text-xs text-zinc-500 mt-6">Нажмите на карточку, чтобы увидеть ответ</span>
                 </div>
 
                 <!-- Обратная сторона (Ответ) -->
                 <div class="card-face card-face-back">
-                    <span class="text-xs uppercase tracking-widest text-purple-400 font-semibold mb-4">Ответ / Объяснение</span>
-                    <div class="card-content overflow-y-auto max-h-[260px] w-full flex items-center justify-center px-2">
+                    <span id="backLabel" class="text-xs uppercase tracking-widest text-purple-400 font-semibold mb-4">Ответ / Объяснение</span>
+                    <div class="card-content overflow-y-auto max-h-[240px] w-full flex items-center justify-center px-2">
                         <p id="cardAnswer" class="text-base sm:text-lg text-zinc-200 leading-relaxed"></p>
                     </div>
 
-                    <!-- Кнопка удаления (только для пользовательских карточек) -->
-                    <button id="deleteCardBtn" class="hidden mt-5 px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 text-xs font-medium transition flex items-center gap-1.5">
+                    <!-- Кнопка удаления карточки -->
+                    <button id="deleteCardBtn" class="mt-5 px-3.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 text-xs font-medium transition flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Удалить карточку
+                        <span id="deleteBtnText">Удалить карточку</span>
                     </button>
                 </div>
 
@@ -172,20 +193,20 @@
         </div>
 
         <!-- Кнопки навигации -->
-        <div class="flex items-center justify-center gap-4 mt-8 w-full">
-            <button id="prevBtn" class="flex-1 sm:flex-none sm:w-36 py-3 px-5 rounded-2xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 font-medium transition active:scale-95 flex items-center justify-center gap-2">
+        <div id="navControls" class="flex items-center justify-center gap-4 mt-8 w-full">
+            <button id="prevBtn" class="flex-1 sm:flex-none sm:w-36 py-3 px-5 rounded-2xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 font-medium transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
-                <span>Назад</span>
+                <span id="prevBtnText">Назад</span>
             </button>
 
-            <button id="flipBtn" class="py-3 px-6 rounded-2xl bg-zinc-800/50 hover:bg-zinc-700/60 border border-white/10 text-zinc-300 font-medium transition active:scale-95 text-sm hidden sm:block">
+            <button id="flipBtn" class="py-3 px-6 rounded-2xl bg-zinc-800/50 hover:bg-zinc-700/60 border border-white/10 text-zinc-300 font-medium transition active:scale-95 text-sm hidden sm:block disabled:opacity-40 disabled:pointer-events-none">
                 Перевернуть
             </button>
 
-            <button id="nextBtn" class="flex-1 sm:flex-none sm:w-36 py-3 px-5 rounded-2xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 font-medium transition active:scale-95 flex items-center justify-center gap-2">
-                <span>Вперёд</span>
+            <button id="nextBtn" class="flex-1 sm:flex-none sm:w-36 py-3 px-5 rounded-2xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 font-medium transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+                <span id="nextBtnText">Вперёд</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -194,15 +215,15 @@
     </main>
 
     <!-- Футер -->
-    <footer class="w-full max-w-3xl text-center text-xs text-zinc-600 mt-6">
-        Все добавленные карточки автоматически сохраняются в вашем браузере
+    <footer id="footerText" class="w-full max-w-3xl text-center text-xs text-zinc-600 mt-6">
+        Все карточки автоматически сохраняются в вашем браузере
     </footer>
 
     <!-- Модальное окно добавления новой карточки -->
     <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
         <div class="modal-animate w-full max-w-md rounded-2xl bg-zinc-900 border border-white/15 shadow-2xl p-6">
             <div class="flex items-center justify-between mb-5">
-                <h3 class="text-lg font-semibold text-white">Новая карточка</h3>
+                <h3 id="modalTitle" class="text-lg font-semibold text-white">Новая карточка</h3>
                 <button id="closeModalBtn" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -212,13 +233,13 @@
 
             <form id="addCardForm" class="space-y-4">
                 <div>
-                    <label for="newQuestion" class="block text-xs font-medium text-zinc-400 mb-1.5">Вопрос / Термин</label>
+                    <label id="modalQuestionLabel" for="newQuestion" class="block text-xs font-medium text-zinc-400 mb-1.5">Вопрос / Термин</label>
                     <input type="text" id="newQuestion" required placeholder="Например: Что такое регрессионное тестирование?"
                         class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-800/90 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-sm">
                 </div>
 
                 <div>
-                    <label for="newAnswer" class="block text-xs font-medium text-zinc-400 mb-1.5">Ответ / Объяснение</label>
+                    <label id="modalAnswerLabel" for="newAnswer" class="block text-xs font-medium text-zinc-400 mb-1.5">Ответ / Объяснение</label>
                     <textarea id="newAnswer" required rows="4" placeholder="Краткий и понятный ответ..."
                         class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-800/90 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-sm resize-none"></textarea>
                 </div>
@@ -227,7 +248,7 @@
                     <button type="button" id="cancelModalBtn" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition">
                         Отмена
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition shadow-lg shadow-sky-500/20">
+                    <button type="submit" id="saveCardBtn" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition shadow-lg shadow-sky-500/20">
                         Сохранить карточку
                     </button>
                 </div>
@@ -235,163 +256,97 @@
         </div>
     </div>
 
-    <!-- Встроенное уведомление (Toast) вместо alert() -->
+    <!-- Встроенное уведомление (Toast) -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/15 text-white text-sm shadow-xl transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
         Уведомление
     </div>
 
     <script>
-        // Базовый набор из 27 карточек по QA
-        const defaultCards = [
-            {
-                id: 'def-1',
-                q: 'Жизненный цикл ПО (SDLC)',
-                a: 'Последовательность этапов разработки продукта: Сбор требований → Проектирование → Разработка → Тестирование → Внедрение (релиз) → Поддержка.'
-            },
-            {
-                id: 'def-2',
-                q: 'Виды тестирования',
-                a: 'Функциональное и нефункциональное (производительность, безопасность, юзабилити); по доступу к коду: чёрный, серый и белый ящик; по уровню: модульное, интеграционное, системное, приёмочное; по цели: дымовое (Smoke), регрессионное, санитарное (Sanity).'
-            },
-            {
-                id: 'def-3',
-                q: 'Что такое тест-кейс и как он выглядит',
-                a: 'Документ, описывающий шаги для проверки конкретной функции. Состоит из: ID, Названия, Предусловия, Шагов воспроизведения, Ожидаемого результата и (при прохождении) Фактического результата и Статуса.'
-            },
-            {
-                id: 'def-4',
-                q: 'Техники тестирования (тест-дизайна)',
-                a: 'Способы оптимизации проверок: Эквивалентное разделение, Анализ граничных значений, Таблица принятия решений, Попарное тестирование (Pairwise), Диаграмма состояний и переходов, Предугадывание ошибок.'
-            },
-            {
-                id: 'def-5',
-                q: 'Тестирование безопасности: что в себя включает',
-                a: 'Поиск уязвимостей и защиту данных: проверка аутентификации и авторизации, защита от инъекций (SQLi, XSS), проверка заголовков безопасности (HSTS, CSP, X-Frame-Options), поиск утечек через API (например, User Enumeration).'
-            },
-            {
-                id: 'def-6',
-                q: 'Что такое фронтенд (Frontend)',
-                a: 'Клиентская часть приложения, с которой напрямую взаимодействует пользователь в браузере или приложении (вёрстка HTML/CSS, логика интерфейса на JavaScript, кнопки, формы, анимации).'
-            },
-            {
-                id: 'def-7',
-                q: 'Что такое бэкенд (Backend)',
-                a: 'Серверная часть приложения («под капотом»): обработка бизнес-логики, работа с базами данных, аутентификация, интеграция с внешними сервисами и ответы на API-запросы.'
-            },
-            {
-                id: 'def-8',
-                q: 'Методы HTTP-запросов',
-                a: 'Основные глаголы для общения с сервером: GET (получить данные), POST (создать), PUT (полностью обновить), PATCH (частично обновить), DELETE (удалить).'
-            },
-            {
-                id: 'def-9',
-                q: 'Разница между PUT и PATCH',
-                a: 'PUT полностью заменяет ресурс на сервере (нужно передавать все поля), а PATCH обновляет только указанные поля, не затрагивая остальные.'
-            },
-            {
-                id: 'def-10',
-                q: 'Статус-коды HTTP: какие есть группы',
-                a: '1xx (Информационные), 2xx (Успешные), 3xx (Перенаправления / Редиректы), 4xx (Ошибки клиента), 5xx (Ошибки сервера).'
-            },
-            {
-                id: 'def-11',
-                q: 'Что значит код 201',
-                a: 'Created — запрос выполнен успешно, и в результате на сервере был создан новый ресурс (часто возвращается на POST-запрос).'
-            },
-            {
-                id: 'def-12',
-                q: 'Что значит код 204',
-                a: 'No Content — запрос выполнен успешно, но в теле ответа нет данных для возврата (часто используется при DELETE-запросах).'
-            },
-            {
-                id: 'def-13',
-                q: 'Что значит код 301',
-                a: 'Moved Permanently — запрашиваемый ресурс навсегда перенесён на новый URL-адрес (постоянный редирект).'
-            },
-            {
-                id: 'def-14',
-                q: 'Что значит код 400',
-                a: 'Bad Request — сервер не может обработать запрос из-за синтаксической ошибки, неверного формата JSON или отсутствия обязательных параметров со стороны клиента.'
-            },
-            {
-                id: 'def-15',
-                q: 'Что значит код 401',
-                a: 'Unauthorized — для доступа к ресурсу требуется аутентификация (пользователь не залогинен или передан неверный/просроченный токен).'
-            },
-            {
-                id: 'def-16',
-                q: 'Что значит код 403',
-                a: 'Forbidden — сервер понял запрос, пользователь аутентифицирован, но у него недостаточно прав доступа к этому ресурсу.'
-            },
-            {
-                id: 'def-17',
-                q: 'Что значит код 404',
-                a: 'Not Found — запрашиваемый ресурс или страница не найдены на сервере.'
-            },
-            {
-                id: 'def-18',
-                q: 'Что значит код 500',
-                a: 'Internal Server Error — внутренняя ошибка сервера; на стороне бэкенда произошло непредвиденное исключение, которое он не смог обработать.'
-            },
-            {
-                id: 'def-19',
-                q: 'Что значит код 502',
-                a: 'Bad Gateway — сервер, выступающий в роли шлюза или прокси (например, Nginx или Cloudflare), получил некорректный ответ от вышестоящего сервера.'
-            },
-            {
-                id: 'def-20',
-                q: 'Что значит код 504',
-                a: 'Gateway Timeout — шлюз или прокси-сервер не дождался ответа от вышестоящего сервера в установленное время (таймаут).'
-            },
-            {
-                id: 'def-21',
-                q: 'Что такое вкладка Elements (в DevTools)',
-                a: 'Инструмент для просмотра и редактирования DOM-дерева (HTML) и CSS-стилей страницы в реальном времени.'
-            },
-            {
-                id: 'def-22',
-                q: 'Что такое вкладка Console (в DevTools)',
-                a: 'Инструмент для просмотра логов, ошибок JavaScript и предупреждений, а также для выполнения JS-кода прямо на странице.'
-            },
-            {
-                id: 'def-23',
-                q: 'Что такое вкладка Network (в DevTools)',
-                a: 'Инструмент для отслеживания всех сетевых запросов браузера: статус-коды, время ответа, заголовки (Headers), тело запросов и ответов.'
-            },
-            {
-                id: 'def-24',
-                q: 'Что такое вкладка Collection (в Postman)',
-                a: 'Папка для организации, группировки и хранения сохранённых API-запросов по проектам или модулям, которую можно запускать целиком (Collection Runner).'
-            },
-            {
-                id: 'def-25',
-                q: 'Что такое CRUD',
-                a: 'Четыре базовые операции с данными в БД и API: Create (создание — POST), Read (чтение — GET), Update (обновление — PUT/PATCH), Delete (удаление — DELETE).'
-            },
-            {
-                id: 'def-26',
-                q: 'Что такое CI/CD',
-                a: 'Continuous Integration / Continuous Delivery (Deployment) — практика автоматической сборки, прогона автотестов и выкатки нового кода на сервер при каждом изменении в репозитории.'
-            },
-            {
-                id: 'def-27',
-                q: 'В чем разница между аутентификацией и авторизацией',
-                a: 'Аутентификация — это проверка «кто ты?» (вход по логину/паролю или токену). Авторизация — это проверка «что тебе можно делать?» (проверка прав доступа и ролей).'
-            }
-        ];
+        const STORAGE_KEY = 'qa_flashcards_user_v1';
+        const LANG_KEY = 'qa_flashcards_lang_v1';
 
-        const STORAGE_KEY = 'qa_flashcards_custom_v1';
+        const translations = {
+            ru: {
+                pageTitle: 'QA Flashcards — Повторение теории',
+                langBadge: 'RU',
+                subtitle: 'Повторение теории тестирования',
+                shuffle: 'Перемешать',
+                add: 'Добавить',
+                noCards: 'Карточек пока нет',
+                cardCounter: (curr, total) => `Карточка ${curr} из ${total}`,
+                shortcuts: 'Пробел — перевернуть • ← → — листать',
+                emptyTitle: 'Колода пуста',
+                emptyDesc: 'Нажми «Добавить» в правом верхнем углу или кнопку ниже, чтобы создать свою первую карточку.',
+                emptyAddBtn: 'Добавить первую карточку',
+                frontLabel: 'Вопрос / Термин',
+                flipPrompt: 'Нажмите на карточку, чтобы увидеть ответ',
+                backLabel: 'Ответ / Объяснение',
+                deleteBtn: 'Удалить карточку',
+                prevBtn: 'Назад',
+                flipBtn: 'Перевернуть',
+                nextBtn: 'Вперёд',
+                footer: 'Все карточки автоматически сохраняются в вашем браузере',
+                modalTitle: 'Новая карточка',
+                modalQuestionLabel: 'Вопрос / Термин',
+                modalQuestionPlaceholder: 'Например: Что такое регрессионное тестирование?',
+                modalAnswerLabel: 'Ответ / Объяснение',
+                modalAnswerPlaceholder: 'Краткий и понятный ответ...',
+                cancelBtn: 'Отмена',
+                saveBtn: 'Сохранить карточку',
+                toastShuffled: 'Карточки перемешаны',
+                toastAdded: 'Карточка добавлена',
+                toastDeleted: 'Карточка удалена',
+                toastSaveError: 'Не удалось сохранить в память браузера'
+            },
+            en: {
+                pageTitle: 'QA Flashcards — Theory Review',
+                langBadge: 'ENG',
+                subtitle: 'QA Theory Review',
+                shuffle: 'Shuffle',
+                add: 'Add',
+                noCards: 'No cards yet',
+                cardCounter: (curr, total) => `Card ${curr} of ${total}`,
+                shortcuts: 'Space — flip • ← → — navigate',
+                emptyTitle: 'Deck is empty',
+                emptyDesc: 'Click "Add" in the top right corner or the button below to create your first card.',
+                emptyAddBtn: 'Add first card',
+                frontLabel: 'Question / Term',
+                flipPrompt: 'Click the card to see the answer',
+                backLabel: 'Answer / Explanation',
+                deleteBtn: 'Delete card',
+                prevBtn: 'Prev',
+                flipBtn: 'Flip',
+                nextBtn: 'Next',
+                footer: 'All cards are automatically saved in your browser',
+                modalTitle: 'New Card',
+                modalQuestionLabel: 'Question / Term',
+                modalQuestionPlaceholder: 'e.g., What is regression testing?',
+                modalAnswerLabel: 'Answer / Explanation',
+                modalAnswerPlaceholder: 'Short and clear answer...',
+                cancelBtn: 'Cancel',
+                saveBtn: 'Save card',
+                toastShuffled: 'Cards shuffled',
+                toastAdded: 'Card added',
+                toastDeleted: 'Card deleted',
+                toastSaveError: 'Failed to save to browser storage'
+            }
+        };
+
+        let currentLang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ru';
         let cards = [];
         let currentIndex = 0;
         let isFlipped = false;
 
         // DOM-элементы
+        const langToggleBtn = document.getElementById('langToggleBtn');
+        const emptyStateEl = document.getElementById('emptyState');
+        const emptyAddBtn = document.getElementById('emptyAddBtn');
+        const cardContainerEl = document.getElementById('cardContainer');
         const flashcardEl = document.getElementById('flashcard');
         const questionEl = document.getElementById('cardQuestion');
         const answerEl = document.getElementById('cardAnswer');
         const counterEl = document.getElementById('cardCounter');
         const progressBarEl = document.getElementById('progressBar');
-        const customBadgeEl = document.getElementById('customBadge');
         const deleteCardBtn = document.getElementById('deleteCardBtn');
 
         const prevBtn = document.getElementById('prevBtn');
@@ -408,83 +363,138 @@
         const newAnswerInput = document.getElementById('newAnswer');
         const toastEl = document.getElementById('toast');
 
-        // Загрузка карточек (базовые + пользовательские из localStorage)
+        // Применение языка ко всему интерфейсу
+        function applyLanguage() {
+            const t = translations[currentLang];
+            document.documentElement.lang = currentLang;
+            document.title = t.pageTitle;
+
+            langToggleBtn.textContent = t.langBadge;
+            document.getElementById('subtitleText').textContent = t.subtitle;
+            document.getElementById('shuffleText').textContent = t.shuffle;
+            document.getElementById('addBtnText').textContent = t.add;
+            document.getElementById('shortcutsHint').textContent = t.shortcuts;
+
+            document.getElementById('emptyTitle').textContent = t.emptyTitle;
+            document.getElementById('emptyDesc').textContent = t.emptyDesc;
+            document.getElementById('emptyAddBtnText').textContent = t.emptyAddBtn;
+
+            document.getElementById('frontLabel').textContent = t.frontLabel;
+            document.getElementById('flipPrompt').textContent = t.flipPrompt;
+            document.getElementById('backLabel').textContent = t.backLabel;
+            document.getElementById('deleteBtnText').textContent = t.deleteBtn;
+
+            document.getElementById('prevBtnText').textContent = t.prevBtn;
+            flipBtn.textContent = t.flipBtn;
+            document.getElementById('nextBtnText').textContent = t.nextBtn;
+            document.getElementById('footerText').textContent = t.footer;
+
+            document.getElementById('modalTitle').textContent = t.modalTitle;
+            document.getElementById('modalQuestionLabel').textContent = t.modalQuestionLabel;
+            newQuestionInput.placeholder = t.modalQuestionPlaceholder;
+            document.getElementById('modalAnswerLabel').textContent = t.modalAnswerLabel;
+            newAnswerInput.placeholder = t.modalAnswerPlaceholder;
+            cancelModalBtn.textContent = t.cancelBtn;
+            document.getElementById('saveCardBtn').textContent = t.saveBtn;
+
+            // Обновляем счётчик карточек
+            if (cards.length === 0) {
+                counterEl.textContent = t.noCards;
+            } else {
+                counterEl.textContent = t.cardCounter(currentIndex + 1, cards.length);
+            }
+        }
+
+        // Переключение языка
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            localStorage.setItem(LANG_KEY, currentLang);
+            applyLanguage();
+        }
+
+        // Загрузка карточек из localStorage
         function loadCards() {
             try {
-                const savedCustom = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-                cards = [...defaultCards, ...savedCustom];
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                cards = Array.isArray(saved) ? saved : [];
             } catch (e) {
-                cards = [...defaultCards];
+                cards = [];
             }
         }
 
-        // Сохранение пользовательских карточек в localStorage
-        function saveCustomCards() {
+        // Сохранение карточек в localStorage
+        function saveCards() {
             try {
-                const customOnly = cards.filter(c => c.isCustom);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(customOnly));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
             } catch (e) {
-                showToast('Не удалось сохранить в память браузера');
+                showToast(translations[currentLang].toastSaveError);
             }
         }
 
-        // Отрисовка текущей карточки
+        // Отрисовка текущей карточки или пустого состояния
         function renderCard() {
-            if (cards.length === 0) return;
+            const hasCards = cards.length > 0;
+            const t = translations[currentLang];
+
+            emptyStateEl.classList.toggle('hidden', hasCards);
+            cardContainerEl.classList.toggle('hidden', !hasCards);
+
+            prevBtn.disabled = !hasCards;
+            nextBtn.disabled = !hasCards;
+            flipBtn.disabled = !hasCards;
+            shuffleBtn.disabled = cards.length < 2;
+
+            if (!hasCards) {
+                counterEl.textContent = t.noCards;
+                progressBarEl.style.width = '0%';
+                return;
+            }
 
             const current = cards[currentIndex];
 
-            // Сброс переворота при переключении
             isFlipped = false;
             flashcardEl.classList.remove('is-flipped');
 
-            // Небольшая задержка обновления текста обратной стороны, чтобы при перевороте не мелькал старый ответ
             questionEl.textContent = current.q;
             setTimeout(() => {
                 answerEl.textContent = current.a;
             }, 100);
 
-            // Обновление счётчика и прогресс-бара
-            counterEl.textContent = `Карточка ${currentIndex + 1} из ${cards.length}`;
+            counterEl.textContent = t.cardCounter(currentIndex + 1, cards.length);
             const progress = ((currentIndex + 1) / cards.length) * 100;
             progressBarEl.style.width = `${progress}%`;
-
-            // Бейдж и кнопка удаления для пользовательских карточек
-            if (current.isCustom) {
-                customBadgeEl.classList.remove('hidden');
-                deleteCardBtn.classList.remove('hidden');
-            } else {
-                customBadgeEl.classList.add('hidden');
-                deleteCardBtn.classList.add('hidden');
-            }
         }
 
         // Переворот карточки
         function toggleFlip() {
+            if (cards.length === 0) return;
             isFlipped = !isFlipped;
             flashcardEl.classList.toggle('is-flipped', isFlipped);
         }
 
         // Навигация
         function nextCard() {
+            if (cards.length === 0) return;
             currentIndex = (currentIndex + 1) % cards.length;
             renderCard();
         }
 
         function prevCard() {
+            if (cards.length === 0) return;
             currentIndex = (currentIndex - 1 + cards.length) % cards.length;
             renderCard();
         }
 
         // Перемешивание (алгоритм Фишера — Йетса)
         function shuffleCards() {
+            if (cards.length < 2) return;
             for (let i = cards.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [cards[i], cards[j]] = [cards[j], cards[i]];
             }
             currentIndex = 0;
             renderCard();
-            showToast('Карточки перемешаны');
+            showToast(translations[currentLang].toastShuffled);
         }
 
         // Показ всплывающего уведомления
@@ -510,8 +520,9 @@
         }
 
         // Обработчики событий
+        langToggleBtn.addEventListener('click', toggleLanguage);
+
         flashcardEl.addEventListener('click', (e) => {
-            // Игнорируем клик, если нажали на кнопку удаления внутри карточки
             if (e.target.closest('#deleteCardBtn')) return;
             toggleFlip();
         });
@@ -522,10 +533,10 @@
         shuffleBtn.addEventListener('click', shuffleCards);
 
         openModalBtn.addEventListener('click', openModal);
+        emptyAddBtn.addEventListener('click', openModal);
         closeModalBtn.addEventListener('click', closeModal);
         cancelModalBtn.addEventListener('click', closeModal);
 
-        // Закрытие модалки по клику на фон
         addModal.addEventListener('click', (e) => {
             if (e.target === addModal) closeModal();
         });
@@ -537,43 +548,43 @@
             const a = newAnswerInput.value.trim();
             if (!q || !a) return;
 
-            const newCard = {
-                id: 'custom-' + Date.now(),
+            cards.push({
+                id: 'card-' + Date.now(),
                 q,
-                a,
-                isCustom: true
-            };
+                a
+            });
 
-            cards.push(newCard);
-            saveCustomCards();
+            saveCards();
             currentIndex = cards.length - 1;
             renderCard();
             closeModal();
-            showToast('Карточка добавлена');
+            showToast(translations[currentLang].toastAdded);
         });
 
-        // Удаление пользовательской карточки
+        // Удаление текущей карточки
         deleteCardBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const current = cards[currentIndex];
-            if (!current || !current.isCustom) return;
+            if (cards.length === 0) return;
 
             cards.splice(currentIndex, 1);
-            saveCustomCards();
+            saveCards();
+
             if (currentIndex >= cards.length) {
                 currentIndex = Math.max(0, cards.length - 1);
             }
+
             renderCard();
-            showToast('Карточка удалена');
+            showToast(translations[currentLang].toastDeleted);
         });
 
-        // Горячие клавиши (Пробел, Стрелки, Escape)
+        // Горячие клавиши
         document.addEventListener('keydown', (e) => {
-            // Не перехватываем клавиши, если открыто модальное окно
             if (!addModal.classList.contains('hidden')) {
                 if (e.key === 'Escape') closeModal();
                 return;
             }
+
+            if (cards.length === 0) return;
 
             if (e.code === 'Space') {
                 e.preventDefault();
@@ -585,11 +596,13 @@
             }
         });
 
-        // Инициализация при загрузке
+        // Инициализация
         window.onload = () => {
             loadCards();
+            applyLanguage();
             renderCard();
         };
     </script>
 </body>
 </html>
+
