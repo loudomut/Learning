@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Без выхода в интернет и без доступа к личным файлам пользователя -->
+    <key>com.apple.security.network.client</key>
+    <false/>
+    <key>com.apple.security.network.server</key>
+    <false/>
+    <key>com.apple.security.personal-information.addressbook</key>
+    <false/>
+    <key>com.apple.security.personal-information.calendars</key>
+    <false/>
+    <key>com.apple.security.personal-information.location</key>
+    <false/>
+    <key>com.apple.security.device.camera</key>
+    <false/>
+    <key>com.apple.security.device.microphone</key>
+    <false/>
+</dict>
+</plist>
