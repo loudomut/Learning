@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,7 +6,6 @@
     <title>QA Flashcards — Повторение теории</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Системный шрифт macOS и базовые настройки */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #0d0d12;
@@ -21,12 +19,10 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Контейнер для 3D-перспективы карточки */
         .perspective-1000 {
             perspective: 1200px;
         }
 
-        /* Внутренний блок карточки для вращения */
         .card-inner {
             position: relative;
             width: 100%;
@@ -40,7 +36,6 @@
             transform: rotateY(180deg);
         }
 
-        /* Лицевая и обратная стороны карточки */
         .card-face {
             position: absolute;
             width: 100%;
@@ -57,7 +52,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2.5rem;
+            padding: 2rem 2.5rem;
             text-align: center;
             user-select: none;
         }
@@ -68,7 +63,6 @@
             border: 1px solid rgba(56, 189, 248, 0.25);
         }
 
-        /* Стилизация скроллбара для длинных ответов */
         .card-content::-webkit-scrollbar {
             width: 6px;
         }
@@ -80,7 +74,6 @@
             border-radius: 10px;
         }
 
-        /* Анимация появления модального окна */
         @keyframes modalFadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -106,7 +99,14 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-2 sm:gap-2.5">
+            <!-- Кнопка сброса к вшитой базе -->
+            <button id="resetBtn" title="Сбросить к исходным карточкам из кода" class="p-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-400 hover:text-white transition active:scale-95 text-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+            </button>
+
             <!-- Шильдик переключения языка -->
             <button id="langToggleBtn" title="Сменить язык / Switch language" class="px-3 py-2.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 hover:text-white transition active:scale-95 text-xs font-semibold tracking-wider uppercase">
                 RU
@@ -143,8 +143,8 @@
             <div id="progressBar" class="h-full bg-gradient-to-r from-sky-400 to-purple-500 transition-all duration-300" style="width: 0%;"></div>
         </div>
 
-        <!-- Пустое состояние (когда карточек 0) -->
-        <div id="emptyState" class="w-full h-[360px] sm:h-[420px] rounded-[24px] bg-zinc-900/60 border border-dashed border-white/15 flex flex-col items-center justify-center p-8 text-center">
+        <!-- Пустое состояние -->
+        <div id="emptyState" class="hidden w-full h-[380px] sm:h-[440px] rounded-[24px] bg-zinc-900/60 border border-dashed border-white/15 flex flex-col items-center justify-center p-8 text-center">
             <div class="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -161,13 +161,13 @@
         </div>
 
         <!-- 3D Карточка -->
-        <div id="cardContainer" class="hidden w-full h-[360px] sm:h-[420px] perspective-1000 relative">
+        <div id="cardContainer" class="w-full h-[380px] sm:h-[440px] perspective-1000 relative">
             <div id="flashcard" class="card-inner">
 
                 <!-- Лицевая сторона (Вопрос) -->
                 <div class="card-face card-face-front">
                     <span id="frontLabel" class="text-xs uppercase tracking-widest text-sky-400 font-semibold mb-4">Вопрос / Термин</span>
-                    <div class="card-content overflow-y-auto max-h-[240px] w-full flex items-center justify-center">
+                    <div class="card-content overflow-y-auto max-h-[260px] w-full flex items-center justify-center">
                         <h2 id="cardQuestion" class="text-2xl sm:text-3xl font-semibold text-white leading-snug"></h2>
                     </div>
                     <span id="flipPrompt" class="text-xs text-zinc-500 mt-6">Нажмите на карточку, чтобы увидеть ответ</span>
@@ -175,25 +175,34 @@
 
                 <!-- Обратная сторона (Ответ) -->
                 <div class="card-face card-face-back">
-                    <span id="backLabel" class="text-xs uppercase tracking-widest text-purple-400 font-semibold mb-4">Ответ / Объяснение</span>
-                    <div class="card-content overflow-y-auto max-h-[240px] w-full flex items-center justify-center px-2">
-                        <p id="cardAnswer" class="text-base sm:text-lg text-zinc-200 leading-relaxed"></p>
+                    <span id="backLabel" class="text-xs uppercase tracking-widest text-purple-400 font-semibold mb-3">Ответ / Объяснение</span>
+                    <div class="card-content overflow-y-auto max-h-[260px] w-full flex items-start justify-center px-2">
+                        <p id="cardAnswer" class="text-sm sm:text-base text-zinc-200 leading-relaxed whitespace-pre-line text-left sm:text-center my-auto"></p>
                     </div>
 
-                    <!-- Кнопка удаления карточки -->
-                    <button id="deleteCardBtn" class="mt-5 px-3.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 text-xs font-medium transition flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span id="deleteBtnText">Удалить карточку</span>
-                    </button>
+                    <!-- Кнопки действий на обороте карточки -->
+                    <div class="mt-4 flex items-center gap-2.5">
+                        <button id="editCardBtn" class="px-3.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/20 text-xs font-medium transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span id="editBtnText">Изменить</span>
+                        </button>
+
+                        <button id="deleteCardBtn" class="px-3.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/20 text-xs font-medium transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span id="deleteBtnText">Удалить</span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
         </div>
 
         <!-- Кнопки навигации -->
-        <div id="navControls" class="flex items-center justify-center gap-4 mt-8 w-full">
+        <div id="navControls" class="flex items-center justify-center gap-4 mt-7 w-full">
             <button id="prevBtn" class="flex-1 sm:flex-none sm:w-36 py-3 px-5 rounded-2xl bg-zinc-800/80 hover:bg-zinc-700/80 border border-white/10 text-zinc-200 font-medium transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -215,8 +224,8 @@
     </main>
 
     <!-- Футер -->
-    <footer id="footerText" class="w-full max-w-3xl text-center text-xs text-zinc-600 mt-6">
-        Все карточки автоматически сохраняются в вашем браузере
+    <footer id="footerText" class="w-full max-w-3xl text-center text-xs text-zinc-600 mt-5">
+        База карточек вшита в код • Изменения сохраняются в браузере
     </footer>
 
     <!-- Модальное окно добавления новой карточки -->
@@ -240,7 +249,7 @@
 
                 <div>
                     <label id="modalAnswerLabel" for="newAnswer" class="block text-xs font-medium text-zinc-400 mb-1.5">Ответ / Объяснение</label>
-                    <textarea id="newAnswer" required rows="4" placeholder="Краткий и понятный ответ..."
+                    <textarea id="newAnswer" required rows="5" placeholder="Краткий и понятный ответ..."
                         class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-800/90 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-sm resize-none"></textarea>
                 </div>
 
@@ -256,13 +265,374 @@
         </div>
     </div>
 
+    <!-- Модальное окно редактирования карточки -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="modal-animate w-full max-w-md rounded-2xl bg-zinc-900 border border-white/15 shadow-2xl p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 id="editModalTitle" class="text-lg font-semibold text-white">Редактировать карточку</h3>
+                <button id="closeEditModalBtn" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="editCardForm" class="space-y-4">
+                <div>
+                    <label id="editQuestionLabel" for="editQuestionInput" class="block text-xs font-medium text-zinc-400 mb-1.5">Вопрос / Термин</label>
+                    <input type="text" id="editQuestionInput" required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-800/90 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-sm">
+                </div>
+
+                <div>
+                    <label id="editAnswerLabel" for="editAnswerInput" class="block text-xs font-medium text-zinc-400 mb-1.5">Ответ / Объяснение</label>
+                    <textarea id="editAnswerInput" required rows="6"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-800/90 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-sm resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" id="cancelEditModalBtn" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition">
+                        Отмена
+                    </button>
+                    <button type="submit" id="updateCardBtn" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition shadow-lg shadow-sky-500/20">
+                        Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Встроенное уведомление (Toast) -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/15 text-white text-sm shadow-xl transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
         Уведомление
     </div>
 
     <script>
-        const STORAGE_KEY = 'qa_flashcards_user_v1';
+        // Вшитая база карточек (никогда не пропадёт из файла)
+        const DEFAULT_CARDS = [
+            {
+                id: 'def-1',
+                q: 'SDLC — этапы разработки продукта',
+                a: 'Software Development Life Cycle (жизненный цикл разработки ПО):\n1. Сбор и анализ требований\n2. Проектирование (архитектура, UI/UX)\n3. Разработка (написание кода)\n4. Тестирование (QA)\n5. Деплой (выкатка в продакшен)\n6. Поддержка и развитие продукта'
+            },
+            {
+                id: 'def-2',
+                q: 'STLC — этапы работы QA команды',
+                a: 'Software Testing Life Cycle (жизненный цикл тестирования):\n1. Анализ требований\n2. Планирование тестирования (Test Plan)\n3. Разработка тестовой документации (тест-кейсы, чек-листы)\n4. Настройка тестового окружения\n5. Выполнение тестов и заведение багов\n6. Завершение тестирования (Test Summary Report)'
+            },
+            {
+                id: 'def-3',
+                q: 'Жизненный цикл бага',
+                a: 'Путь дефекта от обнаружения до закрытия:\nNew (Новый) → Assigned (Назначен разработчику) → In Progress (В работе) → Fixed (Исправлен) → Retest / Ready for QA (На проверке у тестировщика) → Verified / Closed (Закрыт) или Reopened (Переоткрыт, если баг остался).\nАльтернативные статусы: Rejected (Отклонён), Duplicate (Дубликат), Deferred (Отложен).'
+            },
+            {
+                id: 'def-4',
+                q: 'Жизненный цикл мобильного приложения',
+                a: 'Состояния приложения в ОС (iOS / Android):\n1. Not Running — не запущено\n2. Inactive — запущено на переднем плане, но не принимает события (например, при входящем звонке)\n3. Active — работает на экране, пользователь взаимодействует с ним\n4. Background — свёрнуто в фон, но продолжает выполнять задачи\n5. Suspended — заморожено в оперативной памяти, код не выполняется (может быть выгружено системой при нехватке памяти).'
+            },
+            {
+                id: 'def-5',
+                q: 'Классы эквивалентности (что это?)',
+                a: 'Техника тест-дизайна, при которой все возможные входные данные делятся на группы (классы), обрабатываемые системой одинаково.\nЕсли тест проходит на одном значении из класса, предполагается, что он пройдёт и на всех остальных. Позволяет резко сократить число тестов без потери качества.\nПример: поле возраста от 18 до 60 → классы: <18 (невалидный), 18–60 (валидный), >60 (невалидный).'
+            },
+            {
+                id: 'def-6',
+                q: 'Граничные значения (что это?)',
+                a: 'Техника тест-дизайна, дополняющая классы эквивалентности. Большинство багов прячется именно на границах диапазонов из-за ошибок в операторах (< вместо <=).\nПроверяются сама граница и два соседних значения (шаг влево, шаг вправо).\nПример для диапазона 18–60: проверяем 17, 18, 19 и 59, 60, 61.'
+            },
+            {
+                id: 'def-7',
+                q: 'Таблицы решений (что это?)',
+                a: 'Техника тест-дизайна для проверки сложной бизнес-логики, где результат зависит от комбинации нескольких условий.\nВ строках таблицы записываются условия и итоговые действия, а в столбцах — все возможные комбинации («Да» / «Нет»). Гарантирует, что ни одно сочетание условий не забыто.'
+            },
+            {
+                id: 'def-8',
+                q: 'Диаграммы состояний (что это?)',
+                a: 'Техника тест-дизайна (State Transition), применяемая для систем, где поведение зависит от текущего состояния и предыдущих событий.\nОтображает состояния системы, переходы между ними, события-триггеры и условия перехода.\nПример: статусы заказа в интернет-магазине или ввод PIN-кода с блокировкой после 3 попыток.'
+            },
+            {
+                id: 'def-9',
+                q: 'Чек-лист',
+                a: 'Список кратких проверок (идей тестирования) без подробного описания шагов.\nОтвечает на вопрос «Что проверить?». Используется при быстрой проверке (Smoke), при нехватке времени или когда логика интерфейса очевидна без пошаговой инструкции.'
+            },
+            {
+                id: 'def-10',
+                q: 'Тест-кейс',
+                a: 'Детально описанный сценарий проверки с конкретными шагами и ожидаемым результатом.\nОбязательные поля: ID, Заголовок, Предусловия, Шаги воспроизведения, Ожидаемый результат (Expected Result).\nОтвечает на вопрос «Как проверить и что должно произойти?».'
+            },
+            {
+                id: 'def-11',
+                q: 'Баг-репорт',
+                a: 'Документ, описывающий расхождение между фактическим и ожидаемым поведением системы.\nКлючевые поля: Summary (Что? Где? При каких условиях?), Шаги воспроизведения, Фактический результат (AR), Ожидаемый результат (ER), Severity (серьёзность), Priority (приоритет), Окружение, Логи/скриншоты.'
+            },
+            {
+                id: 'def-12',
+                q: 'Тест-сьют',
+                a: 'Test Suite — логически объединённый набор тест-кейсов, сгруппированный по определённому признаку (например, по модулю: «Авторизация», «Корзина» или по виду тестирования: «Smoke Suite», «Regression Suite»).'
+            },
+            {
+                id: 'def-13',
+                q: 'Тест-ран',
+                a: 'Test Run — конкретный прогон (выполнение) выбранного набора тест-кейсов на определённой сборке (билде) и окружении. В процессе тест-рана каждому кейсу проставляется статус: Passed, Failed, Blocked или Skipped.'
+            },
+            {
+                id: 'def-14',
+                q: 'Тест-план',
+                a: 'Основной документ планирования тестирования. Описывает: что именно тестируем (Scope) и что не тестируем (Out of Scope), стратегию и виды тестирования, тестовые окружения, график работ, критерии начала и окончания тестирования, возможные риски и распределение ролей в команде.'
+            },
+            {
+                id: 'def-15',
+                q: 'RTM (матрица трассируемости)',
+                a: 'Requirements Traceability Matrix — таблица, связывающая бизнес-требования с тест-кейсами (иногда и с багами).\nПозволяет убедиться, что каждое требование покрыто тестами на 100%, а также быстро оценить, какие тесты нужно прогнать при изменении конкретного требования.'
+            },
+            {
+                id: 'def-16',
+                q: 'Отчет (Test Summary Report)',
+                a: 'Итоговый документ по результатам тестирования релиза или спринта.\nСодержит статистику пройденных/упавших тестов, список найденных и оставшихся открытых багов (особенно критических), оценку качества продукта и рекомендацию QA — готов ли билд к релизу.'
+            },
+            {
+                id: 'def-17',
+                q: 'Какие бывают виды тестирования?',
+                a: 'Основные классификации:\n• По запуску кода: статическое (ревью требований/кода) и динамическое.\n• По знанию кода: чёрный ящик (Black Box), белый ящик (White Box), серый ящик (Grey Box).\n• По целям: функциональное и нефункциональное (нагрузочное, безопасность, юзабилити, совместимость).\n• По уровню: модульное (Unit), интеграционное, системное, приёмочное (UAT).\n• Повторные: Smoke, Sanity, регрессионное, ретест.'
+            },
+            {
+                id: 'def-18',
+                q: 'Позитивный тест-кейс',
+                a: 'Сценарий, в котором используются только валидные (корректные) данные и ожидаемое поведение пользователя. Проверяет, что система успешно выполняет свою основную функцию (например, вход с правильным логином и паролем).'
+            },
+            {
+                id: 'def-19',
+                q: 'Негативный тест-кейс',
+                a: 'Сценарий с использованием невалидных данных, некорректных действий или граничных сбоев (пустые поля, спецсимволы, ввод букв вместо цифр, обрыв сети).\nПроверяет, что система корректно обрабатывает ошибки, выдаёт понятные предупреждения и не падает.'
+            },
+            {
+                id: 'def-20',
+                q: 'E2E (End-to-End тестирование)',
+                a: 'Сквозное тестирование, имитирующее полный реальный путь пользователя от начала до конца с участием всех интегрированных систем (фронтенд, бэкенд, БД, платёжные шлюзы).\nПример: регистрация → поиск товара → добавление в корзину → оплата → получение письма на почту.'
+            },
+            {
+                id: 'def-21',
+                q: 'Разница между авторизацией и аутентификацией?',
+                a: 'Аутентификация — это ответ на вопрос «Кто ты?» (проверка подлинности пользователя через логин/пароль, токен или биометрию).\n\nАвторизация — это ответ на вопрос «Что тебе дозволено?» (проверка прав доступа к ресурсам: например, права обычного юзера или администратора).'
+            },
+            {
+                id: 'def-22',
+                q: 'Какие бывают ответы сервера?',
+                a: 'HTTP-статус коды делятся на 5 классов:\n• 1xx (Informational) — информационные (запрос принят, обработка продолжается).\n• 2xx (Success) — успешное выполнение запроса.\n• 3xx (Redirection) — перенаправление (редирект) на другой адрес.\n• 4xx (Client Error) — ошибка на стороне клиента (неверный запрос, нет прав).\n• 5xx (Server Error) — внутренняя ошибка на стороне сервера.'
+            },
+            {
+                id: 'def-23',
+                q: 'Что значит 200 OK?',
+                a: 'Стандартный ответ об успешном HTTP-запросе. Сервер успешно обработал запрос и вернул запрошенные данные (например, HTML-страницу или JSON при GET-запросе).'
+            },
+            {
+                id: 'def-24',
+                q: 'Что значит 201 Created?',
+                a: 'Запрос успешно выполнен, и в результате на сервере был создан новый ресурс. Обычно возвращается в ответ на POST-запросы (например, регистрация нового пользователя или создание заказа).'
+            },
+            {
+                id: 'def-25',
+                q: 'Что значит 204 No Content?',
+                a: 'Сервер успешно обработал запрос, но возвращать в теле ответа нечего (тело пустое). Часто используется при DELETE-запросах (удаление объекта) или при сохранении настроек.'
+            },
+            {
+                id: 'def-26',
+                q: 'Что значит 301 и 302 (Редиректы)?',
+                a: '• 301 Moved Permanently — ресурс навсегда переехал на новый URL (браузеры и поисковики запоминают новый адрес).\n• 302 Found — временное перенаправление на другой URL (например, редирект на страницу логина).'
+            },
+            {
+                id: 'def-27',
+                q: 'Что значит 400 Bad Request?',
+                a: 'Сервер не может или не хочет обрабатывать запрос из-за ошибки клиента: неверный синтаксис JSON, пропущено обязательное поле, неверный формат данных или некорректные параметры.'
+            },
+            {
+                id: 'def-28',
+                q: 'Что значит 401 Unauthorized?',
+                a: 'Требуется аутентификация. Клиент не представился серверу (не передан токен, истекла сессия или введены неверные логин/пароль).'
+            },
+            {
+                id: 'def-29',
+                q: 'Что значит 403 Forbidden?',
+                a: 'Доступ запрещён. Сервер понял, кто ты (аутентификация пройдена), но у твоей учётной записи недостаточно прав для доступа к этому ресурсу (ошибка авторизации).'
+            },
+            {
+                id: 'def-30',
+                q: 'Что значит 404 Not Found?',
+                a: 'Запрашиваемый ресурс не найден на сервере. Либо пользователь ошибся в URL, либо страница/объект в базе данных были удалены.'
+            },
+            {
+                id: 'def-31',
+                q: 'Что значит 405 Method Not Allowed?',
+                a: 'Метод HTTP-запроса не поддерживается для данного эндпоинта. Например, ты отправляешь POST-запрос на адрес, который умеет принимать только GET.'
+            },
+            {
+                id: 'def-32',
+                q: 'Что значит 422 Unprocessable Entity?',
+                a: 'Синтаксис запроса правильный (валидный JSON), но сервер не может обработать данные из-за семантических ошибок или провала бизнес-валидации (например, email уже занят или пароль слишком короткий).'
+            },
+            {
+                id: 'def-33',
+                q: 'Что значит 429 Too Many Requests?',
+                a: 'Клиент отправил слишком много запросов за короткое время. Сработала защита от спама или DDoS (Rate Limiting).'
+            },
+            {
+                id: 'def-34',
+                q: 'Что значит 500 Internal Server Error?',
+                a: 'Внутренняя ошибка сервера. На бэкенде произошло необработанное исключение (упал код, сломалась логика), и сервер не смог выполнить запрос.'
+            },
+            {
+                id: 'def-35',
+                q: 'Что значит 502 Bad Gateway?',
+                a: 'Сервер, выступающий в роли шлюза или прокси (например, Nginx), получил некорректный или пустой ответ от вышестоящего сервера приложений (бэкенд упал или перезагружается).'
+            },
+            {
+                id: 'def-36',
+                q: 'Что значит 503 Service Unavailable?',
+                a: 'Сервер временно не готов обрабатывать запросы. Обычно возникает из-за перегрузки сервера или плановых технических работ.'
+            },
+            {
+                id: 'def-37',
+                q: 'Что значит 504 Gateway Timeout?',
+                a: 'Шлюз или прокси-сервер не дождался ответа от вышестоящего сервера в установленное время. Бэкенд или база данных слишком долго обрабатывают тяжёлый запрос.'
+            },
+            {
+                id: 'def-38',
+                q: 'Что такое CRUD?',
+                a: 'Аббревиатура четырёх базовых операций с данными в БД и REST API:\n• Create (Создание) — POST в API / INSERT в SQL\n• Read (Чтение) — GET в API / SELECT в SQL\n• Update (Обновление) — PUT, PATCH в API / UPDATE в SQL\n• Delete (Удаление) — DELETE в API / DELETE в SQL'
+            },
+            {
+                id: 'def-39',
+                q: 'Что такое JSON?',
+                a: 'JavaScript Object Notation — текстовый формат обмена данными, основанный на парах «ключ: значение» и массивах.\nЛегко читается человеком и парсится любыми языками программирования. Основной формат передачи данных в современном REST API.'
+            },
+            {
+                id: 'def-40',
+                q: 'Что такое CI/CD?',
+                a: '• CI (Continuous Integration — непрерывная интеграция): регулярное слияние кода разработчиков в общий репозиторий с автоматической сборкой и прогоном автотестов.\n• CD (Continuous Delivery / Deployment): автоматическая доставка проверенного кода на тестовые стенды или сразу в продакшен.'
+            },
+            {
+                id: 'def-41',
+                q: 'Что такое Agile?',
+                a: 'Гибкая методология (философия) разработки ПО, ориентированная на итеративную работу короткими циклами, быструю реакцию на изменения требований, тесное общение внутри команды и регулярную поставку работающего продукта заказчику.'
+            },
+            {
+                id: 'def-42',
+                q: 'Что такое Scrum?',
+                a: 'Популярный фреймворк внутри Agile. Работа строится спринтами (обычно 1–2 недели).\nРоли: Product Owner, Scrum Master, команда разработки (включая QA).\nАртефакты и события: Бэклог продукта и спринта, Sprint Planning, Daily Scrum (ежедневные синки), Sprint Review (демо) и ретроспектива.'
+            },
+            {
+                id: 'def-43',
+                q: 'Какие вкладки в DevTools используешь и для чего?',
+                a: '• Elements — инспектирование DOM-дерева, проверка вёрстки, CSS-стилей и поиск локаторов.\n• Console — просмотр JS-ошибок и предупреждений.\n• Network — анализ HTTP-запросов и ответов (статус-коды, заголовки, тело запроса/ответа, скорость загрузки, троттлинг сети).\n• Application — проверка и очистка Cookies, LocalStorage, SessionStorage и кэша.'
+            },
+            {
+                id: 'def-44',
+                q: 'Как общаются frontend и backend?',
+                a: 'По клиент-серверной архитектуре через API (чаще всего REST API по протоколу HTTP/HTTPS).\nФронтенд (клиент) отправляет HTTP-запрос (метод, URL, заголовки, тело в формате JSON) → Бэкенд принимает запрос, проверяет права, обращается к базе данных, обрабатывает бизнес-логику и возвращает HTTP-ответ со статус-кодом и данными в JSON.'
+            },
+            {
+                id: 'def-45',
+                q: 'Разница между HTTP и HTTPS?',
+                a: 'HTTP передаёт данные в открытом (незашифрованном) виде — трафик можно перехватить и прочитать (атака Man-in-the-Middle).\n\nHTTPS — это защищённый HTTP, работающий поверх протокола шифрования TLS/SSL. Обеспечивает конфиденциальность (шифрование), целостность данных и подлинность сервера за счёт SSL-сертификата.'
+            },
+            {
+                id: 'def-46',
+                q: 'Что включает в себя тестирование безопасности?',
+                a: 'Проверку защищённости системы от уязвимостей и несанкционированного доступа:\n• Проверка авторизации и аутентификации (IDOR — доступ к чужим данным по ID)\n• Защита от инъекций (SQL-инъекции, XSS — внедрение скриптов)\n• Проверка шифрования (HTTPS, хранение паролей в виде хэшей)\n• Управление сессиями и токенами, защита от CSRF и брутфорса.'
+            },
+            {
+                id: 'def-47',
+                q: 'Что такое модульное тестирование?',
+                a: 'Unit Testing — самый нижний уровень пирамиды тестирования. Проверка отдельных изолированных компонентов программы (функций, методов, классов) в отрыве от остальной системы (с использованием заглушек/моков). Обычно пишется разработчиками.'
+            },
+            {
+                id: 'def-48',
+                q: 'Что такое интеграционное тестирование?',
+                a: 'Второй уровень пирамиды тестирования. Проверка взаимодействия и передачи данных между несколькими модулями или внешними сервисами (например, корректность связи между бэкендом и базой данных, или работа с платёжным шлюзом).'
+            },
+            {
+                id: 'def-49',
+                q: 'Системное тестирование',
+                a: 'Третий уровень пирамиды. Тестирование полностью собранного, интегрированного приложения как единого целого в окружении, максимально приближенном к реальному (продакшену), на соответствие всем функциональным и нефункциональным требованиям.'
+            },
+            {
+                id: 'def-50',
+                q: 'SQL: Чем отличаются WHERE и HAVING?',
+                a: '• WHERE фильтрует отдельные строки таблицы ДО группировки (GROUP BY) и не может работать с агрегатными функциями (COUNT, SUM, AVG).\n• HAVING фильтрует уже сгруппированные данные ПОСЛЕ выполнения GROUP BY и используется вместе с агрегатными функциями.'
+            },
+            {
+                id: 'def-51',
+                q: 'SQL: Разница между INNER JOIN и LEFT JOIN?',
+                a: '• INNER JOIN возвращает только те строки, для которых нашлось совпадение в обеих таблицах.\n• LEFT JOIN возвращает ВСЕ строки из левой таблицы и совпавшие строки из правой. Если в правой таблице совпадений нет, в её полях подставится NULL.'
+            },
+            {
+                id: 'def-52',
+                q: 'SQL: Разница между DELETE, TRUNCATE и DROP?',
+                a: '• DELETE — удаляет конкретные строки по условию WHERE (можно откатить транзакцию, счётчик ID не сбрасывается).\n• TRUNCATE — мгновенно очищает всю таблицу целиком и сбрасывает счётчик автоинкремента (структура таблицы остаётся).\n• DROP — полностью удаляет саму таблицу (данные, структуру, индексы) из базы данных.'
+            },
+            {
+                id: 'def-53',
+                q: 'SQL: Что такое Primary Key и Foreign Key?',
+                a: '• Primary Key (первичный ключ) — столбец (или набор столбцов), который уникально идентифицирует каждую запись в таблице. Не может содержать NULL и дубликаты.\n• Foreign Key (внешний ключ) — поле в одной таблице, которое ссылается на Primary Key другой таблицы для обеспечения связи и целостности данных.'
+            },
+            {
+                id: 'def-54',
+                q: 'SQL: Что такое агрегатные функции и GROUP BY?',
+                a: 'Агрегатные функции вычисляют единое значение по набору строк:\nCOUNT() — количество, SUM() — сумма, AVG() — среднее, MIN() — минимум, MAX() — максимум.\nОператор GROUP BY объединяет строки с одинаковыми значениями в группы, чтобы применить к каждой группе эти функции.'
+            },
+            {
+                id: 'def-55',
+                q: 'SQL: Как найти дубликаты в таблице?',
+                a: 'Сгруппировать записи по проверяемому полю и отфильтровать группы, где количество больше 1:\n\nSELECT email, COUNT(*)\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;'
+            },
+            {
+                id: 'def-56',
+                q: 'Postman: Разница между PUT и PATCH?',
+                a: '• PUT — полное обновление ресурса. Требует передачи всех полей объекта целиком; незаполненные поля могут затереться в null.\n• PATCH — частичное обновление ресурса. Передаются только те поля, которые нужно изменить (например, только сменить имя).'
+            },
+            {
+                id: 'def-57',
+                q: 'Postman: Какие бывают области видимости переменных?',
+                a: 'От самой узкой к самой широкой (узкая перезаписывает широкую):\n1. Local — живут только внутри одного запуска запроса/коллекции.\n2. Data — берутся из внешнего файла (CSV/JSON) при прогоне через Runner.\n3. Environment — переменные конкретного окружения (Dev, Stage, Prod).\n4. Collection — доступны всем запросам внутри одной коллекции.\n5. Global — доступны во всём рабочем пространстве (Workspace).'
+            },
+            {
+                id: 'def-58',
+                q: 'Postman: Pre-request Script и Tests (Post-response)?',
+                a: '• Pre-request Script — JS-код, который выполняется ДО отправки запроса (например, генерация случайных данных, вычисление подписи или получение свежего токена).\n• Tests (Scripts → Post-response) — JS-код, выполняемый ПОСЛЕ получения ответа. Используется для автопроверок статус-кода, структуры JSON и сохранения данных из ответа в переменные.'
+            },
+            {
+                id: 'def-59',
+                q: 'Postman: Из чего состоит HTTP-запрос и ответ?',
+                a: 'Запрос: Метод (GET/POST...), URL (эндпоинт + Query Params), Headers (метаданные, авторизация, Content-Type), Body (тело с данными, например JSON).\nОтвет: Статус-код (200, 404...), Headers (время, тип контента, куки) и Body (возвращаемые данные или описание ошибки).'
+            },
+            {
+                id: 'def-60',
+                q: 'Git: Разница между git fetch и git pull?',
+                a: '• git fetch — скачивает новые коммиты и ветки из удалённого репозитория (GitHub/GitLab), но НЕ вливает их в твои локальные файлы (позволяет безопасно посмотреть изменения).\n• git pull — делает сразу два действия: git fetch + git merge (скачивает изменения и сразу сливает их в текущую ветку).'
+            },
+            {
+                id: 'def-61',
+                q: 'Git: Разница между git merge и git rebase?',
+                a: '• git merge — объединяет ветки с созданием специального коммита слияния (merge commit), сохраняя всю реальную ветвистую историю как есть.\n• git rebase — переносит твои коммиты поверх актуальной целевой ветки, делая историю коммитов идеально прямой и линейной.'
+            },
+            {
+                id: 'def-62',
+                q: 'Git: Что такое git stash?',
+                a: 'Команда, которая временно прячет твои текущие незакоммиченные изменения в «карман» (стек) и возвращает рабочую директорию к чистому последнему коммиту.\nУдобно, когда нужно срочно переключиться на другую ветку, а текущая задача ещё не доделана (вернуть обратно: git stash pop).'
+            },
+            {
+                id: 'def-63',
+                q: 'Git: Как отменить изменения (reset vs revert)?',
+                a: '• git reset — откатывает ветку назад, удаляя коммиты из истории (опасно использовать в общих ветках, так как переписывает историю).\n• git revert — создаёт НОВЫЙ коммит, который зеркально отменяет изменения указанного старого коммита. Безопасный способ отката в командной работе.'
+            },
+            {
+                id: 'def-64',
+                q: 'Git: Основные команды рабочего цикла',
+                a: '1. git status — проверить состояние файлов\n2. git checkout -b feature/test — создать и перейти в новую ветку\n3. git add . — добавить изменения в индекс (staging)\n4. git commit -m "описание" — зафиксировать коммит\n5. git push origin feature/test — отправить ветку на сервер'
+            }
+        ];
+
+        const STORAGE_KEY = 'qa_flashcards_user_v2';
         const LANG_KEY = 'qa_flashcards_lang_v1';
 
         const translations = {
@@ -276,16 +646,17 @@
                 cardCounter: (curr, total) => `Карточка ${curr} из ${total}`,
                 shortcuts: 'Пробел — перевернуть • ← → — листать',
                 emptyTitle: 'Колода пуста',
-                emptyDesc: 'Нажми «Добавить» в правом верхнем углу или кнопку ниже, чтобы создать свою первую карточку.',
-                emptyAddBtn: 'Добавить первую карточку',
+                emptyDesc: 'Нажми «Добавить» в правом верхнем углу или кнопку «Сбросить», чтобы вернуть вшитую базу.',
+                emptyAddBtn: 'Добавить карточку',
                 frontLabel: 'Вопрос / Термин',
                 flipPrompt: 'Нажмите на карточку, чтобы увидеть ответ',
                 backLabel: 'Ответ / Объяснение',
-                deleteBtn: 'Удалить карточку',
+                editBtn: 'Изменить',
+                deleteBtn: 'Удалить',
                 prevBtn: 'Назад',
                 flipBtn: 'Перевернуть',
                 nextBtn: 'Вперёд',
-                footer: 'Все карточки автоматически сохраняются в вашем браузере',
+                footer: 'База карточек вшита в код • Изменения сохраняются в браузере',
                 modalTitle: 'Новая карточка',
                 modalQuestionLabel: 'Вопрос / Термин',
                 modalQuestionPlaceholder: 'Например: Что такое регрессионное тестирование?',
@@ -293,10 +664,15 @@
                 modalAnswerPlaceholder: 'Краткий и понятный ответ...',
                 cancelBtn: 'Отмена',
                 saveBtn: 'Сохранить карточку',
+                editModalTitle: 'Редактировать карточку',
+                updateBtn: 'Сохранить изменения',
                 toastShuffled: 'Карточки перемешаны',
                 toastAdded: 'Карточка добавлена',
+                toastUpdated: 'Карточка обновлена',
                 toastDeleted: 'Карточка удалена',
-                toastSaveError: 'Не удалось сохранить в память браузера'
+                toastReset: 'Колода восстановлена из базы кода',
+                toastSaveError: 'Не удалось сохранить в память браузера',
+                confirmReset: 'Сбросить все изменения и вернуть исходный набор карточек из кода?'
             },
             en: {
                 pageTitle: 'QA Flashcards — Theory Review',
@@ -308,16 +684,17 @@
                 cardCounter: (curr, total) => `Card ${curr} of ${total}`,
                 shortcuts: 'Space — flip • ← → — navigate',
                 emptyTitle: 'Deck is empty',
-                emptyDesc: 'Click "Add" in the top right corner or the button below to create your first card.',
-                emptyAddBtn: 'Add first card',
+                emptyDesc: 'Click "Add" in the top right corner or the Reset button to restore built-in cards.',
+                emptyAddBtn: 'Add card',
                 frontLabel: 'Question / Term',
                 flipPrompt: 'Click the card to see the answer',
                 backLabel: 'Answer / Explanation',
-                deleteBtn: 'Delete card',
+                editBtn: 'Edit',
+                deleteBtn: 'Delete',
                 prevBtn: 'Prev',
                 flipBtn: 'Flip',
                 nextBtn: 'Next',
-                footer: 'All cards are automatically saved in your browser',
+                footer: 'Built-in cards stored in code • Edits saved in browser',
                 modalTitle: 'New Card',
                 modalQuestionLabel: 'Question / Term',
                 modalQuestionPlaceholder: 'e.g., What is regression testing?',
@@ -325,10 +702,15 @@
                 modalAnswerPlaceholder: 'Short and clear answer...',
                 cancelBtn: 'Cancel',
                 saveBtn: 'Save card',
+                editModalTitle: 'Edit Card',
+                updateBtn: 'Save changes',
                 toastShuffled: 'Cards shuffled',
                 toastAdded: 'Card added',
+                toastUpdated: 'Card updated',
                 toastDeleted: 'Card deleted',
-                toastSaveError: 'Failed to save to browser storage'
+                toastReset: 'Deck restored to built-in defaults',
+                toastSaveError: 'Failed to save to browser storage',
+                confirmReset: 'Reset all changes and restore default cards from code?'
             }
         };
 
@@ -339,6 +721,7 @@
 
         // DOM-элементы
         const langToggleBtn = document.getElementById('langToggleBtn');
+        const resetBtn = document.getElementById('resetBtn');
         const emptyStateEl = document.getElementById('emptyState');
         const emptyAddBtn = document.getElementById('emptyAddBtn');
         const cardContainerEl = document.getElementById('cardContainer');
@@ -347,6 +730,7 @@
         const answerEl = document.getElementById('cardAnswer');
         const counterEl = document.getElementById('cardCounter');
         const progressBarEl = document.getElementById('progressBar');
+        const editCardBtn = document.getElementById('editCardBtn');
         const deleteCardBtn = document.getElementById('deleteCardBtn');
 
         const prevBtn = document.getElementById('prevBtn');
@@ -354,6 +738,7 @@
         const flipBtn = document.getElementById('flipBtn');
         const shuffleBtn = document.getElementById('shuffleBtn');
 
+        // Модалка добавления
         const addModal = document.getElementById('addModal');
         const openModalBtn = document.getElementById('openModalBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
@@ -361,6 +746,15 @@
         const addCardForm = document.getElementById('addCardForm');
         const newQuestionInput = document.getElementById('newQuestion');
         const newAnswerInput = document.getElementById('newAnswer');
+
+        // Модалка редактирования
+        const editModal = document.getElementById('editModal');
+        const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+        const cancelEditModalBtn = document.getElementById('cancelEditModalBtn');
+        const editCardForm = document.getElementById('editCardForm');
+        const editQuestionInput = document.getElementById('editQuestionInput');
+        const editAnswerInput = document.getElementById('editAnswerInput');
+
         const toastEl = document.getElementById('toast');
 
         // Применение языка ко всему интерфейсу
@@ -382,6 +776,7 @@
             document.getElementById('frontLabel').textContent = t.frontLabel;
             document.getElementById('flipPrompt').textContent = t.flipPrompt;
             document.getElementById('backLabel').textContent = t.backLabel;
+            document.getElementById('editBtnText').textContent = t.editBtn;
             document.getElementById('deleteBtnText').textContent = t.deleteBtn;
 
             document.getElementById('prevBtnText').textContent = t.prevBtn;
@@ -397,7 +792,12 @@
             cancelModalBtn.textContent = t.cancelBtn;
             document.getElementById('saveCardBtn').textContent = t.saveBtn;
 
-            // Обновляем счётчик карточек
+            document.getElementById('editModalTitle').textContent = t.editModalTitle;
+            document.getElementById('editQuestionLabel').textContent = t.modalQuestionLabel;
+            document.getElementById('editAnswerLabel').textContent = t.modalAnswerLabel;
+            cancelEditModalBtn.textContent = t.cancelBtn;
+            document.getElementById('updateCardBtn').textContent = t.updateBtn;
+
             if (cards.length === 0) {
                 counterEl.textContent = t.noCards;
             } else {
@@ -405,24 +805,27 @@
             }
         }
 
-        // Переключение языка
         function toggleLanguage() {
             currentLang = currentLang === 'ru' ? 'en' : 'ru';
             localStorage.setItem(LANG_KEY, currentLang);
             applyLanguage();
         }
 
-        // Загрузка карточек из localStorage
+        // Загрузка карточек: если в localStorage есть сохранённые изменения — берём их, иначе берём вшитый массив DEFAULT_CARDS
         function loadCards() {
             try {
                 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                cards = Array.isArray(saved) ? saved : [];
+                if (Array.isArray(saved) && saved.length > 0) {
+                    cards = saved;
+                } else {
+                    cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+                    saveCards();
+                }
             } catch (e) {
-                cards = [];
+                cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
             }
         }
 
-        // Сохранение карточек в localStorage
         function saveCards() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
@@ -431,8 +834,8 @@
             }
         }
 
-        // Отрисовка текущей карточки или пустого состояния
-        function renderCard() {
+        // Отрисовка текущей карточки
+        function renderCard(keepFlipped = false) {
             const hasCards = cards.length > 0;
             const t = translations[currentLang];
 
@@ -452,27 +855,31 @@
 
             const current = cards[currentIndex];
 
-            isFlipped = false;
-            flashcardEl.classList.remove('is-flipped');
+            if (!keepFlipped) {
+                isFlipped = false;
+                flashcardEl.classList.remove('is-flipped');
+            }
 
             questionEl.textContent = current.q;
-            setTimeout(() => {
+            if (keepFlipped) {
                 answerEl.textContent = current.a;
-            }, 100);
+            } else {
+                setTimeout(() => {
+                    answerEl.textContent = current.a;
+                }, 100);
+            }
 
             counterEl.textContent = t.cardCounter(currentIndex + 1, cards.length);
             const progress = ((currentIndex + 1) / cards.length) * 100;
             progressBarEl.style.width = `${progress}%`;
         }
 
-        // Переворот карточки
         function toggleFlip() {
             if (cards.length === 0) return;
             isFlipped = !isFlipped;
             flashcardEl.classList.toggle('is-flipped', isFlipped);
         }
 
-        // Навигация
         function nextCard() {
             if (cards.length === 0) return;
             currentIndex = (currentIndex + 1) % cards.length;
@@ -485,7 +892,6 @@
             renderCard();
         }
 
-        // Перемешивание (алгоритм Фишера — Йетса)
         function shuffleCards() {
             if (cards.length < 2) return;
             for (let i = cards.length - 1; i > 0; i--) {
@@ -497,7 +903,6 @@
             showToast(translations[currentLang].toastShuffled);
         }
 
-        // Показ всплывающего уведомления
         function showToast(message) {
             toastEl.textContent = message;
             toastEl.classList.remove('translate-y-16', 'opacity-0');
@@ -506,24 +911,51 @@
             }, 2500);
         }
 
-        // Управление модальным окном
-        function openModal() {
+        // Модалка добавления
+        function openAddModal() {
             addModal.classList.remove('hidden');
             addModal.classList.add('flex');
             newQuestionInput.focus();
         }
 
-        function closeModal() {
+        function closeAddModal() {
             addModal.classList.add('hidden');
             addModal.classList.remove('flex');
             addCardForm.reset();
         }
 
+        // Модалка редактирования
+        function openEditModal() {
+            if (cards.length === 0) return;
+            const current = cards[currentIndex];
+            editQuestionInput.value = current.q;
+            editAnswerInput.value = current.a;
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
+            editAnswerInput.focus();
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+            editCardForm.reset();
+        }
+
         // Обработчики событий
         langToggleBtn.addEventListener('click', toggleLanguage);
 
+        resetBtn.addEventListener('click', () => {
+            if (confirm(translations[currentLang].confirmReset)) {
+                cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+                saveCards();
+                currentIndex = 0;
+                renderCard();
+                showToast(translations[currentLang].toastReset);
+            }
+        });
+
         flashcardEl.addEventListener('click', (e) => {
-            if (e.target.closest('#deleteCardBtn')) return;
+            if (e.target.closest('#deleteCardBtn') || e.target.closest('#editCardBtn')) return;
             toggleFlip();
         });
 
@@ -532,16 +964,16 @@
         prevBtn.addEventListener('click', prevCard);
         shuffleBtn.addEventListener('click', shuffleCards);
 
-        openModalBtn.addEventListener('click', openModal);
-        emptyAddBtn.addEventListener('click', openModal);
-        closeModalBtn.addEventListener('click', closeModal);
-        cancelModalBtn.addEventListener('click', closeModal);
+        // События добавления
+        openModalBtn.addEventListener('click', openAddModal);
+        emptyAddBtn.addEventListener('click', openAddModal);
+        closeModalBtn.addEventListener('click', closeAddModal);
+        cancelModalBtn.addEventListener('click', closeAddModal);
 
         addModal.addEventListener('click', (e) => {
-            if (e.target === addModal) closeModal();
+            if (e.target === addModal) closeAddModal();
         });
 
-        // Добавление новой карточки
         addCardForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const q = newQuestionInput.value.trim();
@@ -557,11 +989,41 @@
             saveCards();
             currentIndex = cards.length - 1;
             renderCard();
-            closeModal();
+            closeAddModal();
             showToast(translations[currentLang].toastAdded);
         });
 
-        // Удаление текущей карточки
+        // События редактирования
+        editCardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal();
+        });
+
+        closeEditModalBtn.addEventListener('click', closeEditModal);
+        cancelEditModalBtn.addEventListener('click', closeEditModal);
+
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
+
+        editCardForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (cards.length === 0) return;
+
+            const updatedQ = editQuestionInput.value.trim();
+            const updatedA = editAnswerInput.value.trim();
+            if (!updatedQ || !updatedA) return;
+
+            cards[currentIndex].q = updatedQ;
+            cards[currentIndex].a = updatedA;
+
+            saveCards();
+            renderCard(true);
+            closeEditModal();
+            showToast(translations[currentLang].toastUpdated);
+        });
+
+        // Удаление карточки
         deleteCardBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (cards.length === 0) return;
@@ -580,7 +1042,11 @@
         // Горячие клавиши
         document.addEventListener('keydown', (e) => {
             if (!addModal.classList.contains('hidden')) {
-                if (e.key === 'Escape') closeModal();
+                if (e.key === 'Escape') closeAddModal();
+                return;
+            }
+            if (!editModal.classList.contains('hidden')) {
+                if (e.key === 'Escape') closeEditModal();
                 return;
             }
 
@@ -605,4 +1071,3 @@
     </script>
 </body>
 </html>
-
